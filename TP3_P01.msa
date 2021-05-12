@@ -6,7 +6,7 @@ N 	equ 	6
 EL_SIZE equ 	1	
 
 	org 	RAM
-array 	rmb 	EL_SIZE * N
+array 	rmb 	EL_SIZE*N
 
 	org 	RAM
 datos	FCB	12,15,94,20,15,45

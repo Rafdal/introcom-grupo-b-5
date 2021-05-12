@@ -7,3 +7,5 @@
 !tp3*.msa
 
 !.gitignore
+
+!*.txt
