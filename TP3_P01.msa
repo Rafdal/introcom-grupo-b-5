@@ -11,5 +11,5 @@ array 	rmb 	EL_SIZE*N
 	org 	RAM
 datos	FCB	12,15,94,20,15,45
 * datos	FDB	1200,1235,44694,11920,50915,45
-
+* hola que tal
 	END
