@@ -1,0 +1,70 @@
+	p68hc11
+RAM 	equ 	$2600
+N 	equ 	6
+EL_SIZE equ 	1
+	
+	org 	RAM
+array 	rmb 	EL_SIZE * N
+
+	org 	RAM
+datos	FCB	12,15,94,20,15,45
+
+
+*********************************************************
+*		SUBRUTINA OBTENER VALOR MÁXIMO
+* input: índice del array (1 byte)
+* output: valor del array (1 byte)
+*********************************************************
+
+* [YH	]
+* [YL	]
+* [B	]
+* [A	]
+* [var1 ] 0 <-(X)
+* [XH	] 1
+* [XL	] 2	
+* [PCH	] 3	
+* [PCL	] 4
+* [el_size] 5
+* [arr_len] 6
+* [arr_POS H] 7
+* [arr_POS L] 8
+
+	ORG	$2300
+maxElem	EQU	*
+	pshx			backup de X
+	ins			hago espacio en el stack para var local
+	tsx			X=SP+1
+	psha
+	pshb
+	pshy
+
+	ldaa	6,x		cargo repeticiones del contador (ARR_LEN)
+	staa	0,x		para guardarlas en la variable local
+
+repite	equ	*
+	ldy	7,x		cargo la posición inicial del array (arr_POS)
+	ldab	5,x		cargo el tamaño de los elementos del array
+	mul
+	aby			agrego el offset a X
+ 	ldaa	1,y		lectura
+	staa	5,x
+	
+	dec	0,x
+	bne	repite
+
+	puly
+	pulb
+	pula
+	des		decremento el stack para liberar la variable
+	pulx
+	rts
+
+
+
+
+	ORG	$3000		FLACO ESTO VA AL FINAL DEL CODIGO
+stack	RMB	32
+stk_ini	EQU	*-1
+
+	END
