@@ -1,0 +1,9 @@
+*.*
+!.vscode
+!*.json
+!*.code-snippets
+
+!g1*.msa
+!tp3*.msa
+
+!.gitignore
