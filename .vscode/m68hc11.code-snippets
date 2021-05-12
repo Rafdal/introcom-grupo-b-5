@@ -247,7 +247,7 @@
 	"form constant byte": {
 		"scope": "z80-macroasm",
 		"prefix": "FCB",
-		"body": "${1:name}\tFCB\t\\$20,\\$0,\\$02",
+		"body": "${1:name}\tFCB\t\\$20,\\$0,\\$02\t\tsin espacios",
 		"description": "arma un byte array pa"
 	}
 }
