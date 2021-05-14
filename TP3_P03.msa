@@ -44,7 +44,6 @@ TAM_FIL	EQU	TAM_CEL*COLS	cálculo del tamaño de una fila
 	org	$2000		zona de memoria del MAIN
 main	EQU	*
 	lds	#stk_ini		inicializo el stack
-	lds	#stk_ini
 	ldaa	#N_FIL		
 	psha		guardo el nro de la ultima fila en el stack
 	ldaa	#N_COL

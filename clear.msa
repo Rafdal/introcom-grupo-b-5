@@ -1,0 +1,28 @@
+*	ESTE PROGRAMA SIRVE PARA BORRAR LA MEMORIA DEL WOOKIE Y TODOS LOS REGISTROS
+*	
+*	ASI NO LOS TENES QUE BORRAR A MANO PAPA ;)
+
+	p68h11
+
+	org	$2000
+main	equ	*
+	
+	ldx	#$2028
+	ldy	#$2FFF		repeticiones del contador (va en el main, loop o lo que sea)
+L00	clr	0,X
+	inx
+	dey
+	bne	L00
+
+	ldy	#$01FF		repeticiones del contador (va en el main, loop o lo que sea)
+L01	clr	0,Y
+	dey
+	bne	L01
+
+	ldd	#0
+	ldx	#0
+	ldy	#0
+
+fin	jmp	fin
+	
+	end

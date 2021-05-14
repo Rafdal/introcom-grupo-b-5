@@ -3,9 +3,8 @@
 !*.json
 !*.code-snippets
 
-!g1*.msa
 !tp3*.msa
 
 !.gitignore
-
+!clear.msa
 !*.txt

@@ -1,10 +1,21 @@
+*****************************************************************************************************************
+*		TP2	EJERCICIO 2			GRUPO B5						*
+*														*
+* Consigna:													*
+*	Escribir una rutina que encuentre el mayor de los elementos del array del ejercicio anterior		*
+*	formado por elementos de 1 byte. Indicar los cambios que se deberían hacerse en el código		*
+*	para que la rutina escrita se pueda utilizar para encontrar el elemento mayor del arreglo de 2		*
+*	bytes cada uno (Se deberían hacer menos de 5 modificaciones en el código).				*
+*														*
+*****************************************************************************************************************
+
 	p68hc11
 RAM 	equ 	$2600
 N 	equ 	6
 EL_SIZE equ 	1
 	
 	org 	RAM
-array 	rmb 	EL_SIZE * N
+array 	rmb 	EL_SIZE*N
 
 	org 	RAM
 datos	FCB	12,15,94,20,15,45
@@ -59,8 +70,6 @@ repite	equ	*
 	des		decremento el stack para liberar la variable
 	pulx
 	rts
-
-
 
 
 	ORG	$3000		FLACO ESTO VA AL FINAL DEL CODIGO
