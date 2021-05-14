@@ -1,0 +1,141 @@
+*********************************************************
+*	     Ejercicio 3 - TP3 - Grupo 5
+* Crear un arreglo bidimensional de 4 x 3 celdas, las 
+* mismas contienen números no signados de 16 bits.
+* Escribir la subrutina get_cell que retorne el valor 
+* cualquiera de una celda de la matriz de 4x3. La 
+* subrutina deberá devolver el valor en el registro D, 
+* recibirá por stack la dirección de comienzo de la 
+* matriz, el número de fila y columna. La primera fila/
+* columna del arreglo se indica con el número cero, 
+* mientras que la última con el 3/2. La función deberá 
+* invocar a la subrutina chk¬_status que verificará que 
+* los valores de fila y columna sean válidos. La forma de
+* recepción y envío de parámetros a chk_status la 
+* definirá cada grupo según crea más conveniente. Se 
+* exige documentación clara al respecto. 
+* La función get_cell devuelve el flag de carry en uno 
+* si ocurrió un error y en cero si se pudo obtener el 
+* valor deseado.
+* Trabajar con constantes simbolicas en el desarrollo
+* de las funciones.
+*********************************************************
+
+	p68h11
+
+*********************************************************
+*		ZONA DE CONSTANTES
+* Se definen los valores numericos constantes utilizados
+* a lo largo del programa.
+*********************************************************
+TAM_STK	EQU	20		tamaño del stack
+FILAS	EQU	4		cantidad total de filas de la matriz
+COLS	EQU	3		cantidad total de columnas de la matriz
+TAM_CEL	EQU	2		tamaño de cada celda, depende de la cantidad de bytes
+N_FIL	EQU	FILAS-1		cálculo de la última fila
+N_COL	EQU	COLS-1		cálculo de la última columna
+SEEKF	EQU	3		valor ingresado para buscar el nro de fila
+SEEKC	EQU	1		valor ingresado para buscar el nro de columna
+TAM_FIL	EQU	TAM_CEL*COLS	cálculo del tamaño de una fila
+
+*********************************************************
+*		PROGRAMA PRINCIPAL
+*********************************************************
+	org	$2000		zona de memoria del MAIN
+main	EQU	*
+	lds	#stk_ini		inicializo el stack
+	lds	#stk_ini
+	ldaa	#N_FIL		
+	psha		guardo el nro de la ultima fila en el stack
+	ldaa	#N_COL
+	psha		guardo el nro de la ultima columna en el stack
+	ldaa	#SEEKF
+	psha		guardo el nro de la fila a buscar en el stack
+	ldaa	#SEEKC
+	psha		guardo el nro de la columna a buscar en el stack
+	ldaa	#TAM_CEL
+	psha		guardo el valor del tamaño de cada celda en el stack
+	ldaa	#TAM_FIL
+	psha		guardo el valor del tamaño de cada fila en el stack
+	ldaa	#$00
+	psha		guardo la posicion de memoria de la matriz en el stack
+	ldaa	#$30
+	psha		guardo la posicion de memoria de la matriz en el stack
+
+	jsr	chk_status		voy a la subrutina chk_status
+	clra		borro el registro A
+	clrb		borro el registro B
+	jsr	get_cell		voy a la subrutina get_cell
+
+	std	$3400		guardo el valor recuperado en la posicion de memoria declarada
+
+fin	jmp	fin		bucle infinito, fin del programa
+
+
+*********************************************************
+*		SUBRUTINA CHK_STATUS
+* Esta subrutina es utilizada para verificar que los 
+* valores ingresados de fila y columna sean válidos.
+*********************************************************
+	org	$2050		voy a la posición de memoria 2500
+chk_status	EQU	*
+	pshx		guardo la posición del puntero X en el stack
+	tsx		ubico al puntero X en la posición del Stack Pointer
+	ldaa	11,x		cargo en A N_FIL, el nro de la última fila
+	ldab	9,x		cargo en B SEEKF, el nro de la fila a buscar
+	sba		A = N_FIL - SEEKF
+	bmi	error		si A es negativo, voy a la funcion error
+	ldaa	10,x		cargo en A N_COL, el nro de la última columna
+	ldab	8,x		cargo en B SEEKC, el nro de la columna a buscar
+	sba		A = N_COL - SEEKC
+	bmi	error		si A es negativo, voy a la funcion error
+	clc		doy aviso de que la posición fila/columna es válida poniendo el carry en 0
+	ins
+	ins
+	rts		retorno de la subrutina
+
+*********************************************************
+*		SUBRUTINA GET_CELL
+* Esta subrutina es llamada con el fin de obtener el
+* valor de una celda de la matriz. Recibe los datos que
+* utiliza por stack y devuelve el valor en el registro D.
+*********************************************************
+	org	$2600		voy a la posición de memoria 2600
+get_cell	EQU	*
+	ldy	4,x		llevo al puntero Y a la posición de memoria de la matriz
+	ldaa	9,x		cargo en A el valor de la fila a buscar
+	ldab	6,x		cargo en B el tamaño de cada fila
+	mul			multiplico los valores
+	aby		muevo al puntero Y esa cantidad de espacios de memoria
+	ldaa	8,x		cargo en A el valor de la columna a buscar
+	ldab	7,x		cargo en B el tamaño de cada celda
+	mul			multiplico los valores
+	aby		avanzo el puntero Y esa contidad de espacios de memoria
+	ldd	0,y		guardo el valor presente en esa posición en el registro D
+	pshb		guardo la parte baja del valor en el stack
+	psha		guardo la parte alta del valor en el stack
+	ins
+	ins
+	rts		retorno de la subrutina
+
+*********************************************************
+*		FUNCIÓN DE ERROR
+* Este es un apartado usado para dar aviso de error, su
+* función es prender el bit de Carry y finalizar el
+* programa.
+*********************************************************
+	org	$2080		voy a la posición de memoria 2700
+error	EQU	*
+	sec		prendo el bit del carry para dar aviso de error
+loop	bra	loop		loop infinito
+
+*********************************************************
+*		ZONA DE MEMORIA VOLATIL
+* Aquí se encuentran la matriz y la zona del stack
+*********************************************************
+	org	$3000		voy a la zona de memoria declarada
+matriz	rmb	FILAS*COLS*TAM_CEL		reservo el espacio de memoria para la matriz
+stack	RMB	TAM_STK		reservo el espacio de memoria para el stack
+stk_ini	EQU	*-1		inicio el stack en la última posición
+
+	end
