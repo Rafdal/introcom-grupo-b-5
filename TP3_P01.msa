@@ -1,15 +1,50 @@
+*****************************************************************************************************************
+*		TP3	EJERCICIO 1			GRUPO B 5						*
+*														*
+* Consigna:													*
+*	Crear un arreglo de 6 bytes no signados con los siguientes valores iniciales:				*
+*		{12, 15, 94, 20, 15, 45}.									*
+*	Crear un arreglo de 6 enteros no signados (2 bytes c/u). Los valores iniciales deben ser:		*
+*		{1200, 1235, 44694, 11920, 50915, 45}.								*
+*														*
+*														*
+*****************************************************************************************************************
 	p68h11
 
-*	código va acá
-RAM 	equ 	$3000
-N 	equ 	6
-EL_SIZE equ 	1	
 
-	org 	RAM
-array 	rmb 	EL_SIZE*N
+*********************************************************
+*		ESTRUCTURA DE DATOS			*
+* En esta seccion se definen la estructura del array 1	*
+* y del array 2						*
+*********************************************************
+ARR_1 	equ 	$3000		posición inicial del 1er array
+N_1 	equ 	6		cantidad de elementos del array
+SIZE_1	equ	1		tamaño de cada elemento (en bytes)
 
-	org 	RAM
-datos	FCB	12,15,94,20,15,45
-* datos	FDB	1200,1235,44694,11920,50915,45
-* boeeenas
+ARR_2 	equ 	$3010		posición inicial del 2do array
+N_2	equ 	6		cantidad de elementos del array
+SIZE_2	equ	2		tamaño de cada elemento (en bytes)
+
+*********************************************************
+*		AREA DE MEMORIA				*
+* En esta seccion se reservan las posiciones de memoria	*
+* usadas por los arrays					*
+*********************************************************
+	org 	ARR_1
+arr_1 	rmb 	SIZE_1*N_1	reservo bytes para el primer array
+
+	org 	ARR_2
+arr_2 	rmb 	SIZE_2*N_2	reservo bytes para el segundo array
+
+
+*********************************************************
+*		AREA DE DATOS				*
+* En esta sección se inicializan los arreglos		*
+*********************************************************
+	org 	ARR_1
+datos1	FCB	12,15,94,20,15,45
+	org 	ARR_2
+datos2	FDB	1200,1235,44694,11920,50915,45
+
+
 	END
