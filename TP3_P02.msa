@@ -33,17 +33,28 @@ STKSIZE	equ	32		tamaño del stack
 	org	$2000
 main	equ	*
 	lds	#stk_ini	cargo la posición inicial del stack
-	
+
 	ldx	#ARR_1		cargo la dirección en memoria del array
 	ldaa	#N_1		cargo el largo del array (elementos)
 	pshx			paso por stack la dirección
 	psha			paso por stack el largo del array
 
 	jsr	max_8		Invoco la subrutina para obtener el máximo de los elementos de 8 bits
-	
+
 	ins			Libero 2 bytes
 	ins			del stack.
-	pula			Guardo en A el valor máximo retornado por la subrutina
+	pulb			Guardo en B el valor máximo retornado por la subrutina
+
+
+	ldx	#ARR_2		cargo la dirección en memoria del array
+	ldaa	#N_2		cargo el largo del array (elementos)
+	pshx			paso por stack la dirección
+	psha			paso por stack el largo del array
+
+	jsr	max_16		Invoco la subrutina para obtener el máximo de los elementos de 8 bits
+	
+	ins			Libero 1 byte del stack
+	pulx			Guardo en X el valor máximo retornado por la subrutina
 
 fin	jmp	fin
 
@@ -56,15 +67,11 @@ fin	jmp	fin
 * 	1) Dirección inicial de memoria del array (2 bytes)				*
 *	2) Cantidad de elementos del array (1 byte)					*
 * Outputs (via stack):									*
-*	1) VACIO (2 bytes) - se deben liberar estos bytes				*
-*	2) Mayor elemento del array (1 bytes)						*
+*	1) VACIO (2 bytes) - se deben liberar estos bytes residuales			*
+*	2) Mayor elemento del array (1 byte)						*
 *											*
 *****************************************************************************************
 
-* [YH	]
-* [YL	]
-* [B	]
-* [A	]
 * [XH	] 0 <-(X)
 * [XL	] 1	
 * [PCH	] 2	
@@ -83,16 +90,16 @@ max_8	EQU	*
 
 	ldy	5,x		cargo la posición inicial del array (Y = arr_pos)
 	clr	6,x		inicio en cero la variable max para comparar (max = 0)
-loop	equ	*
+L01	equ	*
 	ldaa	0,y		leo el elemento del array en la posicion actual (A = array[Y])
 	cmpa	6,x		comparo max con A (A-max)
-	bmi	esMenor		si A es menor que max, no lo guardo
+	bls	menor0		si A es menor o igual que max, no lo guardo
 	staa	6,x		Guardo A en max (max = A)
 
-esMenor	iny			aumento un byte
+menor0	iny			aumento un byte
 
 	dec	4,x		decremento la cantidad de elementos restanes a comparar
-	bne	loop		si no es cero, repite
+	bne	L01		si no es cero, repite
 
 	puly			si era cero, recupero los backups
 	pulb			de los registros
@@ -102,10 +109,63 @@ esMenor	iny			aumento un byte
 
 
 
+*****************************************************************************************
+*				SUBRUTINA MAX_16					*
+* Función: Obtener el valor máximo de un arreglo de elementos numéricos no signados	*
+*	de 16 bits									*
+*											*
+* Inputs (via stack): 									*
+* 	1) Dirección inicial de memoria del array (2 bytes)				*
+*	2) Cantidad de elementos del array (1 byte)					*
+* Outputs (via stack):									*
+*	1) VACIO (1 byte) - se debe liberar este byte del stack 			*
+*	2) Mayor elemento del array (2 bytes)						*
+*											*
+*****************************************************************************************
+
+* [XH	] 0 <-(X)
+* [XL	] 1	
+* [PCH	] 2	
+* [PCL	] 3
+* [arr_len] 4
+* [arr_pos H](max H) 5
+* [arr_pos L](max L) 6
+
+	ORG	$2400
+max_16	EQU	*
+	pshx			backup del registro X
+	tsx			X=SP+1
+	psha			backup del registro A
+	pshb			backup del registro B
+	pshy			backup del registro Y
+
+	ldy	5,x		cargo la posición inicial del array (Y = arr_pos)
+	clr	5,x										AGREGO (1)
+	clr	6,x		inicio en cero la variable max para comparar (max = 0)
+L02	equ	*
+	ldd	0,y		leo el elemento del array en la posicion actual (D = array[Y])  CAMBIO (2)
+	cpd	5,x		comparo max con D (D-max)					CAMBIO (3)
+	bls	menor1		si D es menor o igual que max, no lo guardo
+	std	5,x		Guardo D en max (max = D)					CAMBIO (4)
+
+menor1	iny			aumento un byte
+	iny			aumento otro byte						AGREGO (5)
+
+	dec	4,x		decremento la cantidad de elementos restanes a comparar
+	bne	L02		si no es cero, repite
+
+	puly			si era cero, recupero los backups
+	pulb			de los registros
+	pula
+	pulx
+	rts			retorno de la subrutina
+
+
 *********************************************************
-*		AREA DE MEMORIA				*
+*		AREA DE MEMORIA	Y DATOS			*
 * En esta seccion se reservan las posiciones de memoria	*
 * usadas por los arrays					*
+* Y se los inicializan los arrays			*
 *********************************************************
 	org 	ARR_1
 arr_1 	rmb 	SIZE_1*N_1	reservo bytes para el primer array
@@ -114,19 +174,17 @@ arr_1 	rmb 	SIZE_1*N_1	reservo bytes para el primer array
 arr_2 	rmb 	SIZE_2*N_2	reservo bytes para el segundo array
 
 
-*********************************************************
-*		AREA DE DATOS				*
-* En esta sección se inicializan los arreglos		*
-*********************************************************
-	org 	ARR_1
+	org 	ARR_1		inicializo el array 1
 datos1	FCB	12,15,94,20,15,45
-	org 	ARR_2
+	org 	ARR_2		inicializo el array 2
 datos2	FDB	1200,1235,44694,11920,50915,45
 
+*********************************************************
+*		AREA DEL STACK				*
+*********************************************************
 
 	ORG	STK_POS
 stack	RMB	STKSIZE
 stk_ini	EQU	*-1
-
 
 	END
