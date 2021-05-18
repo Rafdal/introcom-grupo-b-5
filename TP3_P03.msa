@@ -34,9 +34,11 @@ COLS	EQU	3		cantidad total de columnas de la matriz
 TAM_CEL	EQU	2		tamaño de cada celda, depende de la cantidad de bytes
 N_FIL	EQU	FILAS-1		cálculo de la última fila
 N_COL	EQU	COLS-1		cálculo de la última columna
-SEEKF	EQU	3		valor ingresado para buscar el nro de fila
+SEEKF	EQU	5		valor ingresado para buscar el nro de fila
 SEEKC	EQU	1		valor ingresado para buscar el nro de columna
 TAM_FIL	EQU	TAM_CEL*COLS	cálculo del tamaño de una fila
+RAM	EQU	$3000		posicion de memoria volatil (matriz y stack)
+DATOOUT	EQU	$3400
 
 *********************************************************
 *		PROGRAMA PRINCIPAL
@@ -56,42 +58,20 @@ main	EQU	*
 	psha		guardo el valor del tamaño de cada celda en el stack
 	ldaa	#TAM_FIL
 	psha		guardo el valor del tamaño de cada fila en el stack
-	ldaa	#$00
-	psha		guardo la posicion de memoria de la matriz en el stack
-	ldaa	#$30
-	psha		guardo la posicion de memoria de la matriz en el stack
+	ldx	#matriz
+	pshx		guardo la posicion de memoria de la matriz en el stack
 
-	jsr	chk_status		voy a la subrutina chk_status
-	clra		borro el registro A
-	clrb		borro el registro B
 	jsr	get_cell		voy a la subrutina get_cell
 
-	std	$3400		guardo el valor recuperado en la posicion de memoria declarada
+	pulx		Libero 4 bytes del stack
+	pulx
+	pulx
+	pulx
+
+	std	DATOOUT		guardo el valor recuperado en la posicion de memoria declarada
 
 fin	jmp	fin		bucle infinito, fin del programa
 
-
-*********************************************************
-*		SUBRUTINA CHK_STATUS
-* Esta subrutina es utilizada para verificar que los 
-* valores ingresados de fila y columna sean válidos.
-*********************************************************
-	org	$2050		voy a la posición de memoria 2500
-chk_status	EQU	*
-	pshx		guardo la posición del puntero X en el stack
-	tsx		ubico al puntero X en la posición del Stack Pointer
-	ldaa	11,x		cargo en A N_FIL, el nro de la última fila
-	ldab	9,x		cargo en B SEEKF, el nro de la fila a buscar
-	sba		A = N_FIL - SEEKF
-	bmi	error		si A es negativo, voy a la funcion error
-	ldaa	10,x		cargo en A N_COL, el nro de la última columna
-	ldab	8,x		cargo en B SEEKC, el nro de la columna a buscar
-	sba		A = N_COL - SEEKC
-	bmi	error		si A es negativo, voy a la funcion error
-	clc		doy aviso de que la posición fila/columna es válida poniendo el carry en 0
-	ins
-	ins
-	rts		retorno de la subrutina
 
 *********************************************************
 *		SUBRUTINA GET_CELL
@@ -101,6 +81,10 @@ chk_status	EQU	*
 *********************************************************
 	org	$2600		voy a la posición de memoria 2600
 get_cell	EQU	*
+	pshx		guardo la posición del puntero X en el stack
+	tsx		ubico al puntero X en la posición del Stack Pointer
+	jsr	chk_status		voy a la subrutina chk_status
+	bcs	error		branch if carry set (C=1)
 	ldy	4,x		llevo al puntero Y a la posición de memoria de la matriz
 	ldaa	9,x		cargo en A el valor de la fila a buscar
 	ldab	6,x		cargo en B el tamaño de cada fila
@@ -111,11 +95,32 @@ get_cell	EQU	*
 	mul			multiplico los valores
 	aby		avanzo el puntero Y esa contidad de espacios de memoria
 	ldd	0,y		guardo el valor presente en esa posición en el registro D
-	pshb		guardo la parte baja del valor en el stack
-	psha		guardo la parte alta del valor en el stack
-	ins
+error	ins
 	ins
 	rts		retorno de la subrutina
+
+
+*********************************************************
+*		SUBRUTINA CHK_STATUS
+* Esta subrutina es utilizada para verificar que los 
+* valores ingresados de fila y columna sean válidos.
+*********************************************************
+	org	$2050		voy a la posición de memoria 2500
+chk_status	EQU	*
+	ldaa	11,x		cargo en A N_FIL, el nro de la última fila
+	ldab	9,x		cargo en B SEEKF, el nro de la fila a buscar
+	sba		A = N_FIL - SEEKF
+	bcs	retorna		branch if carry set (C=1)
+* bmi	error		si A es negativo, voy a la funcion error
+	ldaa	10,x		cargo en A N_COL, el nro de la última columna
+	ldab	8,x		cargo en B SEEKC, el nro de la columna a buscar
+	sba		A = N_COL - SEEKC
+* bmi	error		si A es negativo, voy a la funcion error
+* 	clc		doy aviso de que la posición fila/columna es válida poniendo el carry en 0
+* 	bra	retorna		branch if carry clear (C=0)
+* error	sec
+retorna	rts		retorno de la subrutina
+
 
 *********************************************************
 *		FUNCIÓN DE ERROR
@@ -123,16 +128,16 @@ get_cell	EQU	*
 * función es prender el bit de Carry y finalizar el
 * programa.
 *********************************************************
-	org	$2080		voy a la posición de memoria 2700
-error	EQU	*
-	sec		prendo el bit del carry para dar aviso de error
-loop	bra	loop		loop infinito
+* 	org	$2080		voy a la posición de memoria 2700
+* error	EQU	*
+* 	sec		prendo el bit del carry para dar aviso de error
+* loop	bra	loop		loop infinito
 
 *********************************************************
 *		ZONA DE MEMORIA VOLATIL
 * Aquí se encuentran la matriz y la zona del stack
 *********************************************************
-	org	$3000		voy a la zona de memoria declarada
+	org	RAM		voy a la zona de memoria declarada
 matriz	rmb	FILAS*COLS*TAM_CEL		reservo el espacio de memoria para la matriz
 stack	RMB	TAM_STK		reservo el espacio de memoria para el stack
 stk_ini	EQU	*-1		inicio el stack en la última posición

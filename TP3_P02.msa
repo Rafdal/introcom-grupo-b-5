@@ -12,26 +12,26 @@
 *********************************************************
 *		ESTRUCTURA DE DATOS			*
 * En esta seccion se definen la estructura del array 1	*
-* y del array 2						*
+* y del array 2.					*
+* También definimos constantes del stack		*
 *********************************************************
-ARR_1 	equ 	$3000		posición inicial del primer array
-N_1 	equ 	6		cantidad de elementos del array
-SIZE_1	equ	1		tamaño de cada elemento (en bytes)
+ARR_1 	EQU 	$3000		posición inicial del primer array
+N_1 	EQU 	6		cantidad de elementos del array
+SIZE_1	EQU	1		tamaño de cada elemento (en bytes)
 
-ARR_2 	equ 	$3010		posición inicial del primer array
-N_2	equ 	6		cantidad de elementos del array
-SIZE_2	equ	2		tamaño de cada elemento (en bytes)
+ARR_2 	EQU 	$3010		posición inicial del primer array
+N_2	EQU 	6		cantidad de elementos del array
+SIZE_2	EQU	2		tamaño de cada elemento (en bytes)
 
-
-STK_POS	equ	$3500		posición del fin de stack
-STKSIZE	equ	32		tamaño del stack
+STK_POS	EQU	$3500		posición del fin de stack
+STKSIZE	EQU	32		tamaño del stack
 
 *********************************************************
 *		PROGRAMA PRINCIPAL			*
 *********************************************************
 
 	org	$2000
-main	equ	*
+main	EQU	*
 	lds	#stk_ini	cargo la posición inicial del stack
 
 	ldx	#ARR_1		cargo la dirección en memoria del array
@@ -67,7 +67,7 @@ fin	jmp	fin
 * 	1) Dirección inicial de memoria del array (2 bytes)				*
 *	2) Cantidad de elementos del array (1 byte)					*
 * Outputs (via stack):									*
-*	1) VACIO (2 bytes) - se deben liberar estos bytes residuales			*
+*	1) VACIO (2 bytes) - se deben liberar estos bytes residuales del stack		*
 *	2) Mayor elemento del array (1 byte)						*
 *											*
 *****************************************************************************************
@@ -90,7 +90,7 @@ max_8	EQU	*
 
 	ldy	5,x		cargo la posición inicial del array (Y = arr_pos)
 	clr	6,x		inicio en cero la variable max para comparar (max = 0)
-L01	equ	*
+L01	EQU	*
 	ldaa	0,y		leo el elemento del array en la posicion actual (A = array[Y])
 	cmpa	6,x		comparo max con A (A-max)
 	bls	menor0		si A es menor o igual que max, no lo guardo
@@ -142,7 +142,7 @@ max_16	EQU	*
 	ldy	5,x		cargo la posición inicial del array (Y = arr_pos)
 	clr	5,x										AGREGO (1)
 	clr	6,x		inicio en cero la variable max para comparar (max = 0)
-L02	equ	*
+L02	EQU	*
 	ldd	0,y		leo el elemento del array en la posicion actual (D = array[Y])  CAMBIO (2)
 	cpd	5,x		comparo max con D (D-max)					CAMBIO (3)
 	bls	menor1		si D es menor o igual que max, no lo guardo
@@ -159,7 +159,6 @@ menor1	iny			aumento un byte
 	pula
 	pulx
 	rts			retorno de la subrutina
-
 
 *********************************************************
 *		AREA DE MEMORIA	Y DATOS			*

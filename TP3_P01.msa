@@ -6,8 +6,6 @@
 *		{12, 15, 94, 20, 15, 45}.									*
 *	Crear un arreglo de 6 enteros no signados (2 bytes c/u). Los valores iniciales deben ser:		*
 *		{1200, 1235, 44694, 11920, 50915, 45}.								*
-*														*
-*														*
 *****************************************************************************************************************
 	p68h11
 
@@ -17,13 +15,13 @@
 * En esta seccion se definen la estructura del array 1	*
 * y del array 2						*
 *********************************************************
-ARR_1 	equ 	$3000		posición inicial del 1er array
-N_1 	equ 	6		cantidad de elementos del array
-SIZE_1	equ	1		tamaño de cada elemento (en bytes)
+ARR_1 	EQU 	$3000		posición inicial del 1er array
+N_1 	EQU 	6		cantidad de elementos del array
+SIZE_1	EQU	1		tamaño de cada elemento (en bytes)
 
-ARR_2 	equ 	$3010		posición inicial del 2do array
-N_2	equ 	6		cantidad de elementos del array
-SIZE_2	equ	2		tamaño de cada elemento (en bytes)
+ARR_2 	EQU 	$3010		posición inicial del 2do array
+N_2	EQU 	6		cantidad de elementos del array
+SIZE_2	EQU	2		tamaño de cada elemento (en bytes)
 
 *********************************************************
 *		AREA DE MEMORIA				*

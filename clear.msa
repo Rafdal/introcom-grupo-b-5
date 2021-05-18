@@ -5,7 +5,7 @@
 	p68h11
 
 	org	$2000
-main	equ	*
+main	EQU	*
 	
 	ldx	#$2028
 	ldy	#$2FFF		repeticiones del contador (va en el main, loop o lo que sea)
