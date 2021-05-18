@@ -120,7 +120,6 @@ comp	cmpa    0,X             ; comparo el Registo A (inventario deseado) con el 
 cont_ch EQU     *
 	ldaa	7,y
 	jsr	sub_ax
-* subd	7,y          	; le resto al puntero la cantidad que me desplacé
 
 	stx	8,y             ; envío el puntero del nombre del autor al stack sobreescribiendo biblio
 
