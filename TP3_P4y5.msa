@@ -1,87 +1,86 @@
-	p68h11
-
 *****************************************************************************************************************
 *		TP3	EJERCICIO 5			GRUPO B 5						*
 *														*
 * Consigna:													*
-*	Escribir la subrutina get_author. La misma recibe el número de inventario de un libro y
-* devuelve un puntero al autor del libro y la cantidad de caracteres que contiene el nombre. Se
-* pide que la función reciba por el registro A el número de inventario, devuelva por IX el
-* puntero y por el registro A la cantidad de caracteres del autor. Si el número de inventario no
-* coincide con uno existente en la biblioteca se debe encender el flag de carry.
-* Se pide modularidad y claridad en la documentación.
-* 
+*	Escribir la subrutina get_author. La misma recibe el número de inventario de un libro y			*
+* devuelve un puntero al autor del libro y la cantidad de caracteres que contiene el nombre. Se			*
+* pide que la función reciba por el registro A el número de inventario, devuelva por IX el			*
+* puntero y por el registro A la cantidad de caracteres del autor. Si el número de inventario no		*
+* coincide con uno existente en la biblioteca se debe encender el flag de carry.				*
+* Se pide modularidad y claridad en la documentación.								*
 *****************************************************************************************************************
+	p68h11
 
-***********************************************
-* 
-*		CONSTANTES
-* 
-***********************************************
+*********************************************************
+*		ZONA DE CONSTANTES			*
+* Se definen los valores numericos constantes utilizados*
+* a lo largo del programa.				*
+*********************************************************
 
-CAN_LIB	EQU	20
-INPUT	EQU	44		Valor de inventario a buscar
+CAN_LIB	EQU	20		Cantidad de libros en el arreglo 'BIBLIO'
+INPUT	EQU	17		Valor de inventario a buscar en el arreglo
 
-******************************************************
-*                                                    *
-*        DEFINICIÓN DE LA ESTRUCTURA LIBRO           *
-*                                                    *
-******************************************************
-
+*********************************************************
+*		ESTRUCTURA DE DATOS			*
+* Se define la estructura 'LIBRO'			*
+*********************************************************
         ORG     0
 LIBRO   EQU     *
-autor   rmb     20
-invent	rmb     1
-tema    rmb     5
-EL_SIZE EQU     *-LIBRO   
+autor   rmb     20		nombre del autor
+invent	rmb     1		número de inventario
+tema    rmb     5		tema del libro
+EL_SIZE EQU     *-LIBRO   	tamaño de cada elemento
 
 
 ******************************************************
-*                                                    *
 *                   MAIN                             *
-*                                                    *
 ******************************************************
-* Simplemente inicia el stack pointer y salta a la subrutina
 
        	ORG	$2000	
 
 MAIN	EQU     *
-        lds     #stackp
+        lds     #stackp		inicia el stack pointer
 
-	ldaa	#INPUT
+	ldaa	#INPUT		cargo el valor del inventario a buscar
 	psha
-	ldx	#biblio
+	ldx	#biblio		cargo la dirección de memoria inicial del arreglo biblio
 	pshx
-	ldaa	#invent
+	ldaa	#invent		cargo el tamaño del nombre del autor de la estructura 'LIBRO' en bytes
 	psha
-	ldaa	#EL_SIZE
+	ldaa	#EL_SIZE	cargo el tamaño total de cada elemento del arreglo biblio en bytes
 	psha
-	ldx	#limit
+	ldx	#limit		cargo la dirección de la última posición del arreglo
 	pshx
 
 
-        jsr     getauth
+        jsr     getauth		ejecuto la subrutina getauth
 	
-	ins
-	ins
-	ins
-	ins
-	ins
-	ins
+	puly			libero 7 bytes del stack	
+	puly
+	puly
 	ins
 
 fin     bra     fin
 
-******************************************************
-*                                                    *
-*               SUBROUTINE: GETAUTH                  *
-*                                                    *
-******************************************************
-* Recibe por el registro A (que es pasado como variable local al stack) el inventario deseado.
-* Devuelve por IX la posición del primer caracter del autor y por AccA la cant. de caracteres.
-* Si ocurre un error, el valor del carry queda en 1 y la función retorna por X el puntero al 
-* primer byte del arreglo y A con el valor del inventario que se buscaba
-
+*****************************************************************************************
+*               		SUBROUTINE: GETAUTH					*
+* Objetivo: Obtener la posición y la cantidad de caracteres del nombre de autor de un 	*
+* 	arreglo de libros basados en la estructura 'LIBRO', conociendo el número de	*
+*	inventario del libro a buscar							*
+* Outputs:										*
+* 	1) Posición del primer caracter del nombre del autor (Vía registro IX)		*
+* 	2) Cantidad de caracteres del nombre del autor (Vía registro A)			*
+* Inputs (Parámetros de entrada, deben ser pasados a través del stack):			*
+*	1) Valor de inventario a buscar en el arreglo [1 byte]				*
+* 	2) Dirección de memoria inicial del arreglo de libros [2 bytes]			*
+*	3) Tamaño máximo del nombre del autor de la estructura libro [1 byte]		*
+*	4) Tamaño total de la estructura 'LIBRO' (en bytes) [1 byte]			*
+*	5) Dirección de memoriade la última posición del arreglo de libros [2 bytes]	*
+*											*
+* Consideraciones:									*
+* 	- Después de invocar la subrutina, se deben liberar 7 bytes del stack		*
+*       - En caso de error (no se encontró el elemento), devuelve el carry en 1		*
+*****************************************************************************************
 * [B]
 * [Y H] 0<- (Y)
 * [Y L] 1
@@ -102,7 +101,6 @@ getauth EQU     *               hace backup de los registros modificados durante
 	tsy
 	pshb
 
-
 get_inv EQU     *               ; sección donde se obtiene la ubicación del inventario deseado
         ldx     8,y         	; cargo x con el inicio del arreglo (primer libro)
         ldab    7,y		; cargo B con el tamaño del nombre del autor y lo sumo con X 
@@ -119,7 +117,8 @@ comp	cmpa    0,X             ; comparo el Registo A (inventario deseado) con el 
 
 cont_ch EQU     *
 	ldaa	7,y
-	jsr	sub_ax
+	jsr	sub_ax		; trasladamos el puntero X desde el inventario deseado hasta 
+*				; el primer caracter del autor
 
 	stx	8,y             ; envío el puntero del nombre del autor al stack sobreescribiendo biblio
 
@@ -143,18 +142,20 @@ salir   EQU     *
 	puly
         rts                     ; salgo de la subrutina
 
-*********************************************************
-*		SUBRUTINA sub_ax
-* Sustrae A de X (X = X - A)
-* 
-* no recibe ni devuelve valores por stack
-*********************************************************
-
+*****************************************************************************************
+*		SUBRUTINA sub_ax							*
+* Objetivo: Sustraer el valor del registro A de IX (IX = IX - A)			*
+* 											*
+* Aclaración: 										*
+*    No recibe ni devuelve valores por stack						*
+*    Utilizamos esta subrutina para restar un número de 1 byte de un número de 2 bytes	*
+*****************************************************************************************
 	ORG	$2400
 sub_ax	EQU	*
 	pshb		backup de B
-	pshy
-	psha		cargo A en el stack
+	pshy		backup de Y
+
+	psha		cargo A en el stack (tipo variable local)
 	clra		borro A para
 	psha		crear un espacio vacio en la siguiente pos del stack
 	
@@ -166,11 +167,9 @@ sub_ax	EQU	*
 	
 	ins		libero 2 bytes del stack
 	ins
-	puly
-	pulb		recupero backup
-	rts
-
-
+	puly		recupero backups de IY,B
+	pulb		
+	rts		retorno de la subrutina
 
 ******************************************************
 *                                                    *
@@ -192,20 +191,24 @@ stackp  EQU     *-1
 biblio  rmb     CAN_LIB*EL_SIZE       	; Tamaño del Arreglo = Cantidad de libros * Tamaño de Libros
 limit   EQU     *-1                     ; Última posición del arreglo
 
+
+*********************************************************
+*		DATOS A MODO DE EJEMPLO			*
+* Cargamos algunos datos en el arreglo para pruebas	*
+*********************************************************
+
 	ORG	$3000
-autor1	FCC	'BORGES CORTAZAR'
+autor1	FCC	'JULIO CORTAZAR'
 	FCB	0
 
-	ORG	$3014
+	ORG	$3000+invent
 	FCB	13
 
-	ORG	$301A
-autor2	FCC	'JOSE'
+	ORG	$3000+EL_SIZE
+autor2	FCC	'PABLO NERUDA'
 	FCB	0
 
-	ORG	$302E
+	ORG	$3000+EL_SIZE+invent
 	FCB	44
-
-
 
 	END
