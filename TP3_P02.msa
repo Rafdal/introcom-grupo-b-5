@@ -10,7 +10,7 @@
 	p68h11
 
 *********************************************************
-*		ESTRUCTURA DE DATOS			*
+*	DEFINICIONES Y ESTRUCTURA DE DATOS		*
 * En esta seccion se definen la estructura del array 1	*
 * y del array 2.					*
 * También definimos constantes del stack		*
@@ -69,9 +69,7 @@ fin	jmp	fin
 * Outputs (via stack):									*
 *	1) VACIO (2 bytes) - se deben liberar estos bytes residuales del stack		*
 *	2) Mayor elemento del array (1 byte)						*
-*											*
 *****************************************************************************************
-
 * [XH	] 0 <-(X)
 * [XL	] 1	
 * [PCH	] 2	
@@ -107,8 +105,6 @@ menor0	iny			aumento un byte
 	pulx
 	rts			retorno de la subrutina
 
-
-
 *****************************************************************************************
 *				SUBRUTINA MAX_16					*
 * Función: Obtener el valor máximo de un arreglo de elementos numéricos no signados	*
@@ -120,9 +116,7 @@ menor0	iny			aumento un byte
 * Outputs (via stack):									*
 *	1) VACIO (1 byte) - se debe liberar este byte del stack 			*
 *	2) Mayor elemento del array (2 bytes)						*
-*											*
 *****************************************************************************************
-
 * [XH	] 0 <-(X)
 * [XL	] 1	
 * [PCH	] 2	
@@ -140,21 +134,21 @@ max_16	EQU	*
 	pshy			backup del registro Y
 
 	ldy	5,x		cargo la posición inicial del array (Y = arr_pos)
-	clr	5,x										AGREGO (1)
-	clr	6,x		inicio en cero la variable max para comparar (max = 0)
+	clr	5,x		inicio en cero la variable max (de 16 bits) para comparar (max = 0)
+	clr	6,x										AGREGO (1)
 L02	EQU	*
 	ldd	0,y		leo el elemento del array en la posicion actual (D = array[Y])  CAMBIO (2)
 	cpd	5,x		comparo max con D (D-max)					CAMBIO (3)
 	bls	menor1		si D es menor o igual que max, no lo guardo
 	std	5,x		Guardo D en max (max = D)					CAMBIO (4)
 
-menor1	iny			aumento un byte
-	iny			aumento otro byte						AGREGO (5)
+menor1	iny			aumento dos posiciones para
+	iny			leer el siguiente elemento de 16 bits				AGREGO (5)
 
 	dec	4,x		decremento la cantidad de elementos restanes a comparar
 	bne	L02		si no es cero, repite
 
-	puly			si era cero, recupero los backups
+	puly			si terminó de comparar, recupero los backups
 	pulb			de los registros
 	pula
 	pulx

@@ -146,6 +146,8 @@ salir   EQU     *
 *********************************************************
 *		SUBRUTINA sub_ax
 * Sustrae A de X (X = X - A)
+* 
+* no recibe ni devuelve valores por stack
 *********************************************************
 
 	ORG	$2400
