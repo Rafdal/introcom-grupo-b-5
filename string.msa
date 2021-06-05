@@ -1,0 +1,94 @@
+
+*********************************************************
+*		SUBRUTINA STRLEN			*
+* Esta subrutina devuelve por el [registro B], el largo	*
+* de una cadena de texto con terminador nulo, cuya 	*
+* dirección de memoria es pasada como parámetro		*
+* por el [registro X]					*
+*							*
+* Input:  [AccIX]: dirección de memoria de la cadena	*
+* Output: [AccB]: largo de la cadena sin contar el term *
+*							*
+* Nota: El máximo de la cadena es de 255 con el		*
+*	terminador, si la cadena no presenta terminador	*
+*	nulo, devuelve el overflow en 1			*
+*********************************************************
+strlen	EQU	*
+	psha			backup de A
+	pshx			backup de X
+	
+	ldab	#$FF		Cargo las repeticiones del contador en B
+
+busca	ldaa	0,x		Leo el caracter actual
+	beq	found		Si es cero, significa que es el terminador nulo
+	inx			Si no es, voy a la siguiente posición de la cadena
+	decb			Decremento el contador de cantidad de repeticiones
+	bne	busca		Si no es cero, repite la búsqueda del caracter NULL
+
+	sev			si no encontré el terminador, seteo el overflow en 1
+	bra	return		salgo
+
+found	comb			Invierto el valor de B para obtener la cantidad de caracteres contados
+*				('comb' devuelve overflow en 0 siempre)
+
+return	pulx			recupero backup de X
+	pula			recupero backup de B
+ 	rts
+
+
+
+*****************************************************************************************
+*			INTEGER TO STRING  (INT2STR)					*
+* Descripción: Recibe un número entero de 16 bits por stack y lo representa en una	*
+*	cadena de texto de 3 caracteres ASCII (máx 999) la cual también devuelve por	*
+*	stack. Si se excede de 999, da error (carry=1).					*
+* 											*
+* Inputs (vía stack): [ num ] (2 bytes)							*
+* Outputs:  [ char0 ] [ char1 ] [ char2 ]						*
+*											*
+*****************************************************************************************
+*  stack frame:
+* 
+* [    Y H     ] 0 <-(Y)
+* [    Y L     ] 1
+* [   PC  H    ] 2
+* [   PC  L    ] 3
+* [  -    / c0 ] 4	<=[  fin 8+Y ]máx
+* [ num H / c1 ] 5
+* [ num L / c2 ] 6	<=[ inicio 8+Y ]min
+int2str	equ	*
+	pshy		backup de Y
+	tsy
+	psha		backup de A
+	pshb		backup de B
+	pshx		backup de X
+
+	ldd	5,y		D = num
+	cpd	#999		comparo D con 999
+	bls	inrange		si D<=999  el valor está en rango (3 digitos)
+	sec			seteo carry
+	bra	retorno		si no, fuera de rango, salgo con carry C=1
+
+inrange	equ	*
+	clr	4,y		inicio la cadena en cero
+	clr	5,y
+
+dividir	ldx	#10		X = 10
+	idiv			X = D/X  ,  D = resto = B   (resto de division de enteros)
+	beq	cero		resultado de la división dio cero -> es el último digito y salgo
+	addb	#'0'		si aun no termina, agrego el desfase ASCII
+	stab	6,y		y luego guardo el caracter.
+	dey			voy a la pos anterior
+	xgdx			D = X
+	bra	dividir		dividir hasta que el resultado sea cero
+
+cero	equ	*
+	addb	#'0'		si aun no termina, agrego el desfase ASCII
+	stab	6,y		cargo el último caracter 
+
+retorno	equ	*		retorno de la subrutina
+	pulx
+	pulb
+	pula
+	puly
+	rts
