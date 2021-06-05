@@ -8,6 +8,9 @@
 !maintest.msa
 !UI_V2.msa
 
+TP5*
+TP3*
+
 !.gitignore
 !clear.msa
 !*.txt
