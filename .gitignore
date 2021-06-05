@@ -3,9 +3,10 @@
 !*.json
 !*.code-snippets
 
-!tp3*.msa
-!tp5*.msa
 !string.msa
+!math_ops.msa
+!maintest.msa
+!UI_V2.msa
 
 !.gitignore
 !clear.msa

@@ -249,5 +249,25 @@
 		"prefix": "FCB",
 		"body": "${1:name}\tFCB\t\\$20,\\$0,\\$02\t\tsin espacios",
 		"description": "arma un byte array pa"
+	},
+
+	"tested-working-stable":{
+		"scope": "z80-macroasm",
+		"prefix": "tested-stable",
+		"body": [
+			"*************************************************************************",
+			"*\t\t# TESTED WORKING STABLE #\t$CURRENT_DAY_NAME_SHORT $CURRENT_DATE  $CURRENT_HOUR:$CURRENT_MINUTE\t\t*",
+			"*************************************************************************",
+		]
+	},
+	"wip":{
+		"scope": "z80-macroasm",
+		"prefix": "wip",
+		"body": [
+			"*************************************************************************",
+			"*\t\t# NOT TESTED #\t\tWORK IN PROGRESS\t\t*",
+			"*************************************************************************",
+		]
 	}
+
 }

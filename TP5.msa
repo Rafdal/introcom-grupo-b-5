@@ -25,20 +25,20 @@ main	EQU	*
 
 	jsr 	initdis		;inicio el display
 
-	ldy	#lcd_str	;cargo en Y la dirección de la variable global para el display
+	ldy	#lcd_str	;cargo en Y la direccion de la variable global para el display
 *				;esta direccion se mantiene durante el resto del codigo porque			
 *				;es usada por las subrutinas que trabajan con la cadena
 
-	jsr	clear		;borro el display e inicio la cadena lcd_str vacía
+	jsr	clear		;borro el display e inicio la cadena lcd_str vacia
 
-loop	ldx	#mensaje	;cargo la primera posición del mensaje a mostrar
+loop	ldx	#mensaje	;cargo la primera posicion del mensaje a mostrar
 	jsr	strlen		;chequeo que la cadena tenga terminador nulo y guardo en B su tamaño
-	bvs	fin		;si no tiene, salgo para evitar algún error 
+	bvs	fin		;si no tiene, salgo para evitar algun error 
 
 	IF	SENTIDO=RIGHT	
 
 	abx			apunto X al terminador de la cadena
-	dex			apunto X al último caracter de la cadena
+	dex			apunto X al ultimo caracter de la cadena
 subloop	equ	*
 	ldaa	0,x		leo el caracter actual
 	jsr	push_L		agrego un caracter por izquierda del array para correr todo
@@ -99,20 +99,20 @@ push_R	EQU	*
 	pshx		;backup de X
 	psha		;guardo el valor de A (byte a cargar)
 	tsx
-	pshy		;backup de Y (posición de memoria del vector)
+	pshy		;backup de Y (posicion de memoria del vector)
 	pshb		;backup de B
 
 	ldab	#3	;cargo la cantidad de repeticiones del ciclo
 
 L01	ldaa	1,y	;copio el valor siguiente
-	staa	0,y	;y lo desplazo hacia la izquierda (posición anterior)
-	iny		;voy a la sig. posición
+	staa	0,y	;y lo desplazo hacia la izquierda (posicion anterior)
+	iny		;voy a la sig. posicion
 	decb		;decremento la cantidad de ciclos restantes
 	bne	L01	;si no son cero, repito
 
 
 	ldaa	0,x	;leo el byte del input que debo pushear
-	staa	0,y	;lo escribo en la última posición
+	staa	0,y	;lo escribo en la ultima posicion
 
 	pulb		;recupero todos los backups
 	puly
@@ -145,17 +145,17 @@ push_L	EQU	*
 
 	ldab	#3	;cargo la cantidad de repeticiones del ciclo
 	aby		agrego el desfase
-	dey		resto 1 (porque necesito posicionarme en la posición anterior, no en la última)
+	dey		resto 1 (porque necesito posicionarme en la posicion anterior, no en la ultima)
 
-L03	ldaa	0,y	;copio el valor de la posición actual
-	staa	1,y	;y lo guardo en la posición siguiente (a la derecha)
-	dey		;voy a la posición izquierda (anterior)
+L03	ldaa	0,y	;copio el valor de la posicion actual
+	staa	1,y	;y lo guardo en la posicion siguiente (a la derecha)
+	dey		;voy a la posicion izquierda (anterior)
 	decb		;decremento la cantidad de ciclos restantes
 	bne	L03	;si no son cero, repito
 
 
 	ldaa	0,x	;leo el byte del input que debo pushear
-	staa	1,y	;lo escribo en la primera posición
+	staa	1,y	;lo escribo en la primera posicion
 
 	pulb		;recupero todos los backups
 	puly
@@ -166,7 +166,7 @@ L03	ldaa	0,y	;copio el valor de la posición actual
 
 *************************************************************************
 *		println	(PRINT LINE)					*
-* Descripción:								*
+* Descripcion:								*
 *	Imprime 4 caracteres en el display en una sola			*
 * subrutina, utilizando un arreglo de 4 bytes (caracteres) en memoria	*
 * como input para el display						*
@@ -207,14 +207,14 @@ repite	equ	*
 
 *********************************************************
 *		CLEAR					*
-* Descripción:						*
+* Descripcion:						*
 *	Borra el contenido del display y del vector	*
 *	usado como variable global del display		*
 *							*
 * Params: 						*
 *	- [AccIY]: puntero al vector del display	*
 * 							*
-* Nota: no devuelve valores ni recibe parámetros 	*
+* Nota: no devuelve valores ni recibe parametros 	*
 *********************************************************
 clear	equ	*
 	psha			backup de A
@@ -239,7 +239,7 @@ L05	ldaa	#' '		cargo un espacio
 *			clrdisl				*
 *		(EFECTO CLEAR DISPLAY LEFT)		*
 * borra el display desplazando el texto hacia la izq	*
-* [AccY]: debe mantenerse la posición de la cadena aquí	*
+* [AccY]: debe mantenerse la posicion de la cadena aqui	*
 *********************************************************
 clrdisl	equ	*
 	pshb			hago backup de B
@@ -247,7 +247,7 @@ clrdisl	equ	*
 
 	ldab	#4		repeticiones del contador
 L02	equ	*
-	ldaa	#' '		cargo un caracter tipo espacio vacío
+	ldaa	#' '		cargo un caracter tipo espacio vacio
 	jsr	push_R		lo agrego al vector por derecha
 	jsr	println		actualizo el display
 	jsr	delay		delay
@@ -263,7 +263,7 @@ L02	equ	*
 *			clrdisr				*
 *		(EFECTO CLEAR DISPLAY RIGHT)		*
 * borra el display desplazando el texto hacia la der	*
-* [AccY]: debe mantenerse la posición de la cadena aquí	*
+* [AccY]: debe mantenerse la posicion de la cadena aqui	*
 *********************************************************
 clrdisr	equ	*
 	pshb			hago backup de B
@@ -271,7 +271,7 @@ clrdisr	equ	*
 
 	ldab	#4		repeticiones del contador
 L04	equ	*
-	ldaa	#' '		cargo un caracter tipo espacio vacío
+	ldaa	#' '		cargo un caracter tipo espacio vacio
 	jsr	push_L		lo agrego al vector por izquierda
 	jsr	println		actualizo el display
 	jsr	delay		delay
@@ -287,13 +287,13 @@ L04	equ	*
 *		SUBRUTINA STRLEN			*
 * Esta subrutina devuelve por el [registro B], el largo	*
 * de una cadena de texto con terminador nulo, cuya 	*
-* dirección de memoria es pasada como parámetro		*
+* direccion de memoria es pasada como parametro		*
 * por el [registro X]					*
 *							*
-* Input:  [AccIX]: dirección de memoria de la cadena	*
+* Input:  [AccIX]: direccion de memoria de la cadena	*
 * Output: [AccB]: largo de la cadena sin contar el term *
 *							*
-* Nota: El máximo de la cadena es de 255 con el		*
+* Nota: El maximo de la cadena es de 255 con el		*
 *	terminador, si la cadena no presenta terminador	*
 *	nulo, devuelve el overflow en 1			*
 *********************************************************
@@ -305,11 +305,11 @@ strlen	EQU	*
 
 busca	ldaa	0,x		Leo el caracter actual
 	beq	found		Si es cero, significa que es el terminador nulo
-	inx			Si no es, voy a la siguiente posición de la cadena
+	inx			Si no es, voy a la siguiente posicion de la cadena
 	decb			Decremento el contador de cantidad de repeticiones
-	bne	busca		Si no es cero, repite la búsqueda del caracter NULL
+	bne	busca		Si no es cero, repite la busqueda del caracter NULL
 
-	sev			si no encontré el terminador, seteo el overflow en 1
+	sev			si no encontre el terminador, seteo el overflow en 1
 	bra	return		salgo
 
 found	comb			Invierto el valor de B para obtener la cantidad de caracteres contados
@@ -326,8 +326,8 @@ return	pulx			recupero backup de X
 *							*
 * Esta subrutina genera un delay de aprox 0.5 - 1s para	*
 * simluador del wookie					*
-* No recibe ningún parámetro ni retorna valores, no 	*
-* hace falta liberar el stack depués de invocarla	*
+* No recibe ningun parametro ni retorna valores, no 	*
+* hace falta liberar el stack depues de invocarla	*
 *********************************************************
 
 delay	equ	*
@@ -335,11 +335,11 @@ delay	equ	*
 	pshy							(5 ciclos)
 	psha							(3 ciclos)
 	pshb							(3 ciclos)
-	ldaa	#23		Cargo la cantidad de repeticiones que haré con el loop1. (23 ciclos)
+	ldaa	#23		Cargo la cantidad de repeticiones que hare con el loop1. (23 ciclos)
 *								[TOTAL:17]
 
 *	[LOOP1]: n recorridos del loop1 lleva n*(9+T) ciclos, siendo T los ciclos en total del loop2. 
-loop1	ldy	#$D900		Cargo la cantidad de repeticiones que haré con el loop2. (4 ciclos)
+loop1	ldy	#$D900		Cargo la cantidad de repeticiones que hare con el loop2. (4 ciclos)
 
 * 	[LOOP2]: Un solo recorrido del loop2 lleva 9 ciclos, 55552 ($D900) recorridos del loop2 lleva 499968 ciclos
 loop2	nop			retardo 		(2 ciclos)
@@ -362,8 +362,8 @@ loop2	nop			retardo 		(2 ciclos)
 
 *****************************************
 *	outchar				*
-* ACCA: Carácter a enviar		*
-* ACCB: Posición	(0-3)		*
+* ACCA: Caracter a enviar		*
+* ACCB: Posicion	(0-3)		*
 *****************************************
 outchar	equ	*
 	stab	PORTCL	;set the position

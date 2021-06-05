@@ -3,9 +3,9 @@
 *														*
 * Consigna:													*
 *	Escribir una rutina que encuentre el mayor de los elementos del array del ejercicio anterior		*
-*	formado por elementos de 1 byte. Indicar los cambios que se deberían hacerse en el código		*
+*	formado por elementos de 1 byte. Indicar los cambios que se deberian hacerse en el codigo		*
 *	para que la rutina escrita se pueda utilizar para encontrar el elemento mayor del arreglo de 2		*
-*	bytes cada uno (Se deberían hacer menos de 5 modificaciones en el código).				*
+*	bytes cada uno (Se deberian hacer menos de 5 modificaciones en el codigo).				*
 *****************************************************************************************************************
 	p68h11
 
@@ -13,17 +13,17 @@
 *	DEFINICIONES Y ESTRUCTURA DE DATOS		*
 * En esta seccion se definen la estructura del array 1	*
 * y del array 2.					*
-* También definimos constantes del stack		*
+* Tambien definimos constantes del stack		*
 *********************************************************
-ARR_1 	EQU 	$3000		posición inicial del primer array
+ARR_1 	EQU 	$3000		posicion inicial del primer array
 N_1 	EQU 	6		cantidad de elementos del array
 SIZE_1	EQU	1		tamaño de cada elemento (en bytes)
 
-ARR_2 	EQU 	$3010		posición inicial del primer array
+ARR_2 	EQU 	$3010		posicion inicial del primer array
 N_2	EQU 	6		cantidad de elementos del array
 SIZE_2	EQU	2		tamaño de cada elemento (en bytes)
 
-STK_POS	EQU	$3500		posición del fin de stack
+STK_POS	EQU	$3500		posicion del fin de stack
 STKSIZE	EQU	32		tamaño del stack
 
 *********************************************************
@@ -32,39 +32,39 @@ STKSIZE	EQU	32		tamaño del stack
 
 	org	$2000
 main	EQU	*
-	lds	#stk_ini	cargo la posición inicial del stack
+	lds	#stk_ini	cargo la posicion inicial del stack
 
-	ldx	#ARR_1		cargo la dirección en memoria del array
+	ldx	#ARR_1		cargo la direccion en memoria del array
 	ldaa	#N_1		cargo el largo del array (elementos)
-	pshx			paso por stack la dirección
+	pshx			paso por stack la direccion
 	psha			paso por stack el largo del array
 
-	jsr	max_8		Invoco la subrutina para obtener el máximo de los elementos de 8 bits
+	jsr	max_8		Invoco la subrutina para obtener el maximo de los elementos de 8 bits
 
 	ins			Libero 2 bytes
 	ins			del stack.
-	pulb			Guardo en B el valor máximo retornado por la subrutina
+	pulb			Guardo en B el valor maximo retornado por la subrutina
 
 
-	ldx	#ARR_2		cargo la dirección en memoria del array
+	ldx	#ARR_2		cargo la direccion en memoria del array
 	ldaa	#N_2		cargo el largo del array (elementos)
-	pshx			paso por stack la dirección
+	pshx			paso por stack la direccion
 	psha			paso por stack el largo del array
 
-	jsr	max_16		Invoco la subrutina para obtener el máximo de los elementos de 8 bits
+	jsr	max_16		Invoco la subrutina para obtener el maximo de los elementos de 8 bits
 	
 	ins			Libero 1 byte del stack
-	pulx			Guardo en X el valor máximo retornado por la subrutina
+	pulx			Guardo en X el valor maximo retornado por la subrutina
 
 fin	jmp	fin
 
 *****************************************************************************************
 *				SUBRUTINA MAX_8						*
-* Función: Obtener el valor máximo de un arreglo de elementos numéricos no signados	*
+* Funcion: Obtener el valor maximo de un arreglo de elementos numericos no signados	*
 *	de 8 bits									*
 *											*
 * Inputs (via stack): 									*
-* 	1) Dirección inicial de memoria del array (2 bytes)				*
+* 	1) Direccion inicial de memoria del array (2 bytes)				*
 *	2) Cantidad de elementos del array (1 byte)					*
 * Outputs (via stack):									*
 *	1) VACIO (2 bytes) - se deben liberar estos bytes residuales del stack		*
@@ -86,7 +86,7 @@ max_8	EQU	*
 	pshb			backup del registro B
 	pshy			backup del registro Y
 
-	ldy	5,x		cargo la posición inicial del array (Y = arr_pos)
+	ldy	5,x		cargo la posicion inicial del array (Y = arr_pos)
 	clr	6,x		inicio en cero la variable max para comparar (max = 0)
 L01	EQU	*
 	ldaa	0,y		leo el elemento del array en la posicion actual (A = array[Y])
@@ -107,11 +107,11 @@ menor0	iny			aumento un byte
 
 *****************************************************************************************
 *				SUBRUTINA MAX_16					*
-* Función: Obtener el valor máximo de un arreglo de elementos numéricos no signados	*
+* Funcion: Obtener el valor maximo de un arreglo de elementos numericos no signados	*
 *	de 16 bits									*
 *											*
 * Inputs (via stack): 									*
-* 	1) Dirección inicial de memoria del array (2 bytes)				*
+* 	1) Direccion inicial de memoria del array (2 bytes)				*
 *	2) Cantidad de elementos del array (1 byte)					*
 * Outputs (via stack):									*
 *	1) VACIO (1 byte) - se debe liberar este byte del stack 			*
@@ -133,7 +133,7 @@ max_16	EQU	*
 	pshb			backup del registro B
 	pshy			backup del registro Y
 
-	ldy	5,x		cargo la posición inicial del array (Y = arr_pos)
+	ldy	5,x		cargo la posicion inicial del array (Y = arr_pos)
 	clr	5,x		inicio en cero la variable max (de 16 bits) para comparar (max = 0)
 	clr	6,x										AGREGO (1)
 L02	EQU	*
@@ -148,7 +148,7 @@ menor1	iny			aumento dos posiciones para
 	dec	4,x		decremento la cantidad de elementos restanes a comparar
 	bne	L02		si no es cero, repite
 
-	puly			si terminó de comparar, recupero los backups
+	puly			si termino de comparar, recupero los backups
 	pulb			de los registros
 	pula
 	pulx
