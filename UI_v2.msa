@@ -63,7 +63,6 @@ MASKOUT	equ	11110000b
 waitkey	equ	*
 
 	pshb	                ; hago backup del registro B
-_input  equ     *      		; loop de chequeo: se fija si hay input
 
 fi0	ldaa	#FIL0		; cargo la fila 0 con un 0
 	staa	PORTC
@@ -96,6 +95,8 @@ finin	tba			; transfiero el valor de B con el numero encontrado en A.
 
 endin	pulb			; recupero el registro B
 
+	bcs	waitkey
+
 	rts
 
 
@@ -120,7 +121,7 @@ convert	equ	*
 	anda	#MASKOUT	; hago una mascara para obtener solo los 4 bits mas significativos (columnas)
 	
 	cmpa	#MASKOUT
-	beq	_input  	; de ser todos 1, no se apreto ninguna tecla, termino la subrutina
+	beq	sinnum  	; de ser todos 1, no se apreto ninguna tecla, termino la subrutina
 
 	cmpa	#COL0		
 	bne	sig1		; si la tecla apretada no estaba en la columna 0, me fijo si fue en 1
@@ -153,6 +154,8 @@ soltar	ldaa	PORTC
 	bne	soltar
 
 	bra	fincon		; pongo el carry en 0, indicando que encontro el numero
+
+sinnum	sec			; si no hay numero, seteo el carry
 
 fincon	pula
 
