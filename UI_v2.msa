@@ -3,6 +3,9 @@
 *									*
 * subrutinas para controlar el display y declado			*
 *************************************************************************
+
+*	TO-DO:	TESTING
+
         p68h11
 
 	public	initdis,waitkey,outchar,println,clrdis

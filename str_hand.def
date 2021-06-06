@@ -9,15 +9,14 @@
 
 
 
-
 *************************************************************************
-*		# TESTED WORKING STABLE #	Sun 06  00:31		*
+*		# TESTED WORKING STABLE #	Sun 06  04:04		*
 *************************************************************************
 *			INT4STR (HANDLER) 	v2			*
-* Descripción:								*
+* Descripcion:								*
 *	Convierte un num de 2 bytes en una cadena de texto de 3 bytes	*
 *	- Si la conversion fue exitosa, salta al rotulo de 'pass'	*
-*	- si no lo fue, se ejecuta la instrucción siguiente		*
+*	- si no lo fue, se ejecuta la instruccion siguiente		*
 *									*
 * Params:								*
 *	- num:	direc. memoria, variable 'num' a convertir (num:2 bytes)*		
@@ -38,7 +37,7 @@
 
 	puly			devuelvo backup de X e Y
 	pulx
-	bcc	\2		Si el carry estaba en 0, salto al rótulo de operacion exitosa
+	bcc	\2		Si el carry estaba en 0, salto al rotulo de operacion exitosa
 	endmac			fin macro %int2str (str handler)
 
 
@@ -48,8 +47,8 @@
 *		# TESTED WORKING STABLE #	Sat 05  22:13		*
 *************************************************************************
 *			PRINTLN (HANDLER)				*
-* Descripción:								*
-*	Recibe el rótulo/puntero (dirección de 2 bytes)	a una variable	*
+* Descripcion:								*
+*	Recibe el rotulo/puntero (direccion de 2 bytes)	a una variable	*
 *	global de 4 bytes, que contiene los caracteres a mostrar por el	*
 *	display.							*
 * Sintaxis:								*

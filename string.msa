@@ -3,19 +3,21 @@
 *************************************************************************
 	p68h11
 	
-	public	strlen,int4str
+	public	int4str
 
 
 	rseg	CODE
 	
 
-*************************************************************************
-*		# TESTED WORKING STABLE #	Sat 05  18:27		*   DEPRECATED !
+*************************************************************************   DEPRECATED !
+*		# TESTED WORKING STABLE #	Sat 05  18:27		*   USE INT4STR
 *****************************************************************************************
-*			INTEGER TO STRING  (INT2STR)					*
+*			INTEGER TO STRING  (INT2STR)	[OLD]				*
 * Descripcion: Recibe un numero entero de 16 bits por stack y lo representa en una	*
 *	cadena de texto de 3 caracteres ASCII (max 999) la cual tambien devuelve por	*
 *	stack. Si se excede de 999, da error (carry=1).					*
+* 											*
+* Usar int4str en vez de esta								*
 * 											*
 * Inputs (via stack): [ num ] (2 bytes)							*
 * Outputs (via stack):  [ char0 ] [ char1 ] [ char2 ]					*
@@ -31,11 +33,8 @@
 * [ num H / c1 ] 5
 * [ num L / c2 ] 6	<=[ inicio 8+Y ]min
 int2str	equ	*
-	pshy		backup de Y
+	pshy		backup de Y (sacamos los otros backups porque los hace int4str)
 	tsy
-	psha		backup de A
-	pshb		backup de B
-	pshx		backup de X
 
 	ldd	5,y		D = num
 	cpd	#999		comparo D con 999
@@ -61,15 +60,12 @@ cero	equ	*
 	stab	6,y		cargo el ultimo caracter 
 
 retorno	equ	*		retorno de la subrutina
-	pulx
-	pulb
-	pula
 	puly
 	rts
 
 
 *************************************************************************
-*		# TESTED WORKING STABLE #	Sun 06  00:24		*
+*		# TESTED WORKING STABLE #	Sun 06  04:14		*
 *****************************************************************************************
 *		INTEGER TO STRING v2 (INT4STR)		### version 2 ###		*
 *											*
@@ -100,6 +96,7 @@ int4str	equ	*
 	pshx
 	tsx
 	psha
+	pshb
 
 	ldd	4,x		leo el numero a convertir
 	xgdx			X<-->D
@@ -108,17 +105,18 @@ int4str	equ	*
 	des			creo espacio en el stack
 	jsr	int2str		ejecuto la subrutina vieja
 	pulx			
-	stx	0,y		guardo el output en la variable output
+	stx	0,y		guardo el output de texto en la variable
 	pula
 	staa	2,y		NOTAR que 'stx' y 'staa' no modifican el carry
 
+	pulb
 	pula
 	pulx
 	rts
 
 
 
-
+	END
 *************************************************************************
 *		# NOT TESTED #						* NOT USED!
 *************************************************************************

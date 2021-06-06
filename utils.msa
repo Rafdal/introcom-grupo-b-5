@@ -9,8 +9,8 @@
 *							*
 * Esta subrutina genera un delay de aprox 1s para el	*
 * simluador del wookie					*
-* No recibe ningún parámetro ni retorna valores, no 	*
-* hace falta liberar el stack depués de invocarla	*
+* No recibe ningun parametro ni retorna valores, no 	*
+* hace falta liberar el stack depues de invocarla	*
 *********************************************************
 
 delay	equ	*
@@ -18,11 +18,11 @@ delay	equ	*
 	pshy							(5 ciclos)
 	psha							(3 ciclos)
 	pshb							(3 ciclos)
-	ldaa	#33		Cargo la cantidad de repeticiones que haré con el loop1. (23 ciclos)
+	ldaa	#14		Cargo la cantidad de repeticiones que hare con el loop1. (23 ciclos)
 *								[TOTAL:17]
 
 *	[LOOP1]: n recorridos del loop1 lleva n*(9+T) ciclos, siendo T los ciclos en total del loop2. 
-loop1	ldy	#$D900		Cargo la cantidad de repeticiones que haré con el loop2. (4 ciclos)
+loop1	ldy	#$D900		Cargo la cantidad de repeticiones que hare con el loop2. (4 ciclos)
 
 * 	[LOOP2]: Un solo recorrido del loop2 lleva 9 ciclos, 55552 ($D900) recorridos del loop2 lleva 499968 ciclos
 loop2	nop			retardo 		(2 ciclos)

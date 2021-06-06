@@ -3,16 +3,127 @@
 *************************************************************************
 	p68h11
 
-	public	op_suma
+	public	op_suma,op_rest,op_div
 
 	rseg	CODE
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  04:12		*
+*****************************************************************************************
+*       		subrutina 		OP_DIV					*
+* Inputs:                                                                               *
+*   - Dividendo: [stack] (16 bits)							*
+*   - Divisor: [AccB] (8 bits)								*
+* Outputs:										*
+*   - Result: [stack] (16 bits)                                                         *
+*   - Resto: [Accb] (8 bits)	                                                        *
+*                                                                                       *
+* Aclaraciones:                                                                         *
+*	- Devuelve el carry en 1 si hubo error, por ser el divisor 0.                   *
+*       Aclaraciones:                                                                   *
+*       - Si el resto tiene 1 digito, el cociente puede tener a lo sumo 2 digitos (99)  *
+*       - Si el resto tiene 2 digitos, el divisor tendra como minimo 2 digitos, y 	*
+*	  entonces el cociente no puede tener mas de dos digitos			*
+*****************************************************************************************
+* [ Y H  ]  0 <-(Y)
+* [ Y L  ]  1
+* [ PC  H]  2
+* [ PC  L]  3
+* [ op1 H / res H] 4
+* [ op1 L / res L] 5
+*****************************************************************************************
+op_div	equ	*
+	pshy			; Backup de registros
+	tsy			; creo un frame pointer
+	pshx
+	psha
+
+	tstb
+	beq	errdiv		; si el divisor es 0, salto a error
+	
+	ldx	#0
+	abx			; cargo IX con el divisor (B)
+
+	ldd	4,y		; cargo D con el dividendo	
+	
+	idiv			; efectuo la division entera IX=D/IX, B=resto
+        clc                     ; Pongo el Carry en 0
+	stx	4,y
+	bra	findiv		
+
+errdiv	sec			; Pongo el Carry en 1
+
+findiv	pula			; Restore
+	pulx
+	puly
+	rts
+
+
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  02:28		*
+*****************************************************************************************
+*			subrutina:	OP_REST						*
+* Objetivo: 										*
+*	Sustraer el valor del registro B de un numero de 2 bytes			*
+*    Utilizamos esta subrutina para restar un numero de 1 byte de un numero de 2 bytes	*
+* 											*
+* Aclaracion: 										*
+* Inputs:										*
+*   - op1: 16 bits, via stack								*
+*   - op2: 8 bits, via [AccB]   							*
+* Output:										*
+*   - result: 16 bits, via stack							*
+* 											*
+* El carry en 1 en caso de error (resultado negativo), se setea autom. durante subd     *
+*****************************************************************************************
+* [ 0	 ]  0 <-(Y)
+* [ AccB ]  1
+* [ Y  H ]  2
+* [ Y  L ]  3
+* [ AccA ]  4
+* [ PC  H]  5
+* [ PC  L]  6
+* [ op1 H / res H] 7
+* [ op1 L / res L] 8
+*****************************************************************************************
+op_rest	EQU	*
+	psha		; backup de A
+	pshy		; backup de Y
+
+	pshb		; cargo B en el stack (tipo variable local)
+	clrb		; borro B para
+	pshb		; crear un espacio vacio en la siguiente pos del stack
+	tsy		; Y=SP+1
+	pshx		; backup de X
+	
+	ldx	7,y	; cargo X con el operador 2 (de dos bytes)
+	xgdx		; X<-->D
+	subd	0,y	; D = D - B	'subd' modifica el carry, las demas ops lo dejan como esta
+	xgdx		; X<-->D
+	stx	7,y	; deposito el resultado en el stack
+
+	pulx		; recupero backup de IX
+	ins		; libero 2 bytes del stack
+	ins
+	ldab	#0	; borro el valor de B
+	puly		; recupero backups de IY,B
+	pula		
+	rts		; retorno de la subrutina
+
+
 
 
 *************************************************************************
 *		# TESTED WORKING STABLE #	Sat 05  18:58		*
 *****************************************************************************************
 *					OP_SUMA						*
-* Descripción: 										*
+* Descripcion: 										*
 *	Recibe los dos operandos de una suma, uno de ellos de 16 bits, y el otro de 8	*
 *	y la efectua. Si el resultado es mayor a 999, retorna con error (carry C=1)	*
 *											*
@@ -24,29 +135,33 @@
 *											*
 * Casos de error (Carry=1):	result > 999						*
 *****************************************************************************************
+* [ X H  ]  
+* [ X L  ] 
 * [ Y H  ]  0 <-(Y)
 * [ Y L  ]  1
 * [ PC  H]  2
 * [ PC  L]  3
 * [ op1 H / res H] 4
-* [ op1 L / res L] 5
+* [ op1 L / res L] 5		
+**************************************************************
 op_suma	equ	*
-	pshy			Backup de registros
-	tsy
+	pshy			; Backup de registros
+	tsy			; frame pointer
 	pshx
 	
-	ldx	4,y		cargo el primer operando
-	abx			sumo B con X
-	cpx	#999		si el resultado es mayor a 999
-	bhi	reterr		salgo con error
-	clc			si la operacion es exitosa, borro el carry (C=0)
-	stx	4,y		Guardo el resultado
-	bra	ret_ok		salgo 
+	ldx	4,y		; cargo el primer operando
+	abx			; sumo B con X
+	cpx	#999		; si el resultado es mayor a 999
+	bhi	errsum		; salgo con error
+	clc			; si la operacion es exitosa, borro el carry (C=0)
+	stx	4,y		; Guardo el resultado
+	bra	finsum		; salgo 
 
-reterr	equ	*
-	sec			; Pongo el Carry en 1
+errsum	sec			; Pongo el Carry en 1
 
-ret_ok	pulx			; Restore
+finsum	equ     *
+	ldab	#0		; borro el valor de B
+        pulx			; Restore
 	puly
 
 	rts

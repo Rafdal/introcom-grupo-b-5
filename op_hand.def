@@ -8,10 +8,10 @@
 
 
 *************************************************************************
-*		# TESTED WORKING STABLE #	Sun 06  01:04		*
+*		# TESTED WORKING STABLE #	Sun 06  04:33		*
 *************************************************************************
 *		OPERATION HANDLER (OP_HAND) 				*
-* Descripción:								*
+* Descripcion:								*
 *	Macro para preparar los parametros de las operaciones		*
 *	aritmeticas, ejecutar las subrutinas y saltar a las determinadas*
 *	secciones de error o muestra de resultados			*
