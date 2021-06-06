@@ -3,9 +3,10 @@
 !*.json
 !*.code-snippets
 
-# Handlers
+# Handlers & defs
 !str_hand.def
 !op_hand.def
+!flowctrl.def
 
 # Modules
 !utils.msa

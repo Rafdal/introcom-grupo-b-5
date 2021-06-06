@@ -6,7 +6,7 @@
 *	DEPENDENCIAS: 							*
 *		- UI_v2.msa: 	initdis,clrdis,println,waitkey,outchar	*
 *		- string.msa: 	int4str					*
-*		- math_ops.msa:	op_suma,op_rest,op_div			*
+*		- math_ops.msa:	op_suma,op_rest,op_div,op_mul		*
 *		- utils.msa:	delay					*
 *									*
 *		- str_hand.def (string handlers)			*
@@ -14,7 +14,7 @@
 *************************************************************************
 	extern	initdis,clrdis,println,waitkey,outchar
 	extern	int4str
-	extern	op_suma,op_rest,op_div
+	extern	op_suma,op_rest,op_div,op_mul
 	extern	delay
 
 $str_hand.def			Incluyo los handlers para string.msa
@@ -36,7 +36,7 @@ main	EQU	*
 	jsr	setup		ejecuto la configuracion inicial
 
 	sty	op1		op1 = Y
-	%op_hand op_div,op1,op_err,op_ok
+	%op_hand op_mul,op1,op_err,op_ok
 
 *********************************************************
 * 		OPERATION ERROR				*

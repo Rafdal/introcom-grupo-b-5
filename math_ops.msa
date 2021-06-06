@@ -3,9 +3,78 @@
 *************************************************************************
 	p68h11
 
-	public	op_suma,op_rest,op_div
+	public	op_suma,op_rest,op_div,op_mul
 
 	rseg	CODE
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  17:06		*
+*****************************************************************************************
+*			SUBRUTINA: OP_MUL						*
+*       Descripcion: 									*
+*	Recibe los dos operandos de una multiplicacion, el primero 			*
+*	por el AccB (1 byte) y el segundo por stack (2 bytes)				*
+*	- El resultado de la operacion se devolvera por stack (2 bytes)			*
+*	- Si la multiplicacion supera las tres cifras se devolvera un error		*
+*	poniendo el carry en 1, pero el resultado se devuelve por stack de todos modos	*
+*											*
+* Inputs: 										*
+*   - op1: [stack] (16 bits)								*
+*   - op2: [AccB] (8 bits)								*
+* Outputs:										*
+*   - Result: [stack] (16 bits)								*
+*											*
+* Casos de error (Carry=1):	result > 999						*
+* 											*
+*****************************************************************************************
+* [ op1 H] 
+* [ Y H  ]  <-Y
+* [ Y L  ] 
+* [oper2 ]  
+* [ AccA ] 
+* [ PC  H]  
+* [ PC  L]  
+* [ op1 H / res H] 
+* [ op1 L / res L] 
+*****************************************************************************************
+op_mul	equ	*
+	psha		;hago backup de los registros
+	pshb		
+	pshy 
+	tsy		;creo un frame pointer 
+	ldab	6,Y	; vuelvo a colocar la parte alta del operador 1 en ToS
+	pshb
+	
+* multiplicacion del LSB de oper 1
+        ldaa    7,y		; cargo A con el LSB del oper1
+	ldab	2,y		; cargo B con oper2
+	mul			; lo multiplico con (B) y lo guardo donde ira el resultado
+        std     6,y
+
+* multiplicacion del MSB de oper 1
+	pula			; cargo A con el MSB del oper 1
+	ldab	2,Y		; cargo B con el oper2
+	mul			; los multiplico
+	tba			; lo corro 8 bits a la izquierda dentro del registo D
+	clrb			; dejando el LSB en 0
+
+	addd	6,Y		; lo agrego a la primera parte de la multiplicacion
+	std	6,y		; lo guardo en en stack
+	
+	cpd	#999		; Si el producto tiene mas de tres digitos
+	bhi	errmul		; Salto a error
+        clc                     ; Pongo el Carry en 0
+	bra 	finmul		; Sino, salgo de la subrutina
+
+errmul  sec			; Pongo el Carry en 1
+	
+finmul	equ     *
+        puly	                ; Restore
+	pulb
+	ldab	#0		; Borro el valor de B
+	pula
+	rts
 
 
 
