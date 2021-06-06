@@ -1,0 +1,226 @@
+*********************************************************
+*							*
+*		MODULE TESTING ENVIROMENT		*
+*							*
+* Cuando las cosas fallan, hay que probar por partes	*
+*********************************************************
+	p68h11
+
+DDRC	equ	$1007       	; data direction register for C
+PIOC	equ	$1002       	; for strobe B assertion change
+PORTCL	equ 	$1005       	; port C latched
+PORTB	equ 	$1004		; port B
+PORTC	equ	$1003		; rows
+
+
+
+
+	ORG	$0020
+*********************************************************
+*		MAIN PROGRAM				*
+*********************************************************
+	ORG	$2000
+main	EQU	*
+
+
+
+fin	jmp	fin
+
+
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  00:24		*
+*****************************************************************************************
+*		INTEGER TO STRING v2 (INT4STR)		### version 2 ###		*
+*											*
+* Descripcion: Recibe un numero entero de 16 bits por stack y lo representa en una	*
+*	cadena de texto de 3 caracteres ASCII (max 999) la cual guarda en la direccion	*
+*	de memoria a la que apunta el puntero IY					*
+*	Si se excede de 999, da error (carry=1).					*
+* 											*
+* Inputs: 										*
+*	- num: [STACK] Numero a convertir (2 bytes)					*
+*	- outStr: [AccIY] direccion de memoria a guardar la cadena			*
+* 											*
+* Outputs: ninguno									*
+* NOTA IMPORTANTE: Se deben liberar 2 bytes del stack					*
+* ERROR CASE: num > 999  (Carry=1)							*
+*****************************************************************************************
+* Comentario del programador:  Hicimos esta nueva subrutina para no modificar int2str	*
+*	por falta de tiempo y porque la misma ya estaba testeada			*
+*****************************************************************************************
+*  stack frame:
+* [  X H  ] 0 <-(X)
+* [  X L  ] 1
+* [  PC H ] 2
+* [  PC L ] 3
+* [ num H ] 4
+* [ num L ] 5
+int4str	equ	*
+	pshx
+	tsx
+	psha
+
+	ldd	4,x		leo el numero a convertir
+	xgdx			X<-->D
+	pshx			paso el numero por stack
+	xgdx			X<-->D
+	des			creo espacio en el stack
+	jsr	int2str		ejecuto la subrutina vieja
+	pulx			
+	stx	0,y		guardo el output en la variable output
+	pula
+	staa	2,y		NOTAR que 'stx' y 'staa' no modifican el carry
+
+	pula
+	pulx
+	rts
+
+
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sat 05  18:27		*   DEPRECATED!
+*****************************************************************************************
+*			INTEGER TO STRING  (INT2STR)					*
+* Descripcion: Recibe un numero entero de 16 bits por stack y lo representa en una	*
+*	cadena de texto de 3 caracteres ASCII (max 999) la cual tambien devuelve por	*
+*	stack. Si se excede de 999, da error (carry=1).					*
+* 											*
+* Inputs (via stack): [ num ] (2 bytes)							*
+* Outputs (via stack):  [ char0 ] [ char1 ] [ char2 ]					*
+*											*
+* Nota: Se debe hacer 1 byte de espacio en el stack luego de pushear num		*
+*****************************************************************************************
+*  stack frame:
+* [    Y H     ] 0 <-(Y)
+* [    Y L     ] 1
+* [   PC  H    ] 2
+* [   PC  L    ] 3
+* [  -    / c0 ] 4	<=[  fin 8+Y ]max
+* [ num H / c1 ] 5
+* [ num L / c2 ] 6	<=[ inicio 8+Y ]min
+int2str	equ	*
+	pshy		backup de Y
+	tsy
+	psha		backup de A
+	pshb		backup de B
+	pshx		backup de X
+
+	ldd	5,y		D = num
+	cpd	#999		comparo D con 999
+	bls	inrange		si D<=999  el valor esta en rango (3 digitos)
+	sec			seteo carry
+	bra	retorno		si no, fuera de rango, salgo con carry C=1
+
+inrange	equ	*
+	clr	4,y		inicio la cadena en cero
+	clr	5,y
+
+dividir	ldx	#10		X = 10
+	idiv			X = D/X  ,  D = resto = B   (resto de division de enteros)
+	beq	cero		resultado de la division dio cero -> es el ultimo digito y salgo
+	addb	#'0'		si aun no termina, agrego el desfase ASCII
+	stab	6,y		y luego guardo el caracter.
+	dey			voy a la pos anterior
+	xgdx			D = X
+	bra	dividir		dividir hasta que el resultado sea cero
+
+cero	equ	*
+	addb	#'0'		si aun no termina, agrego el desfase ASCII
+	stab	6,y		cargo el ultimo caracter 
+
+retorno	equ	*		retorno de la subrutina
+	pulx
+	pulb
+	pula
+	puly
+	rts
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sat 05  18:26		*
+*************************************************************************
+*		println	(PRINT LINE)					*
+* Descripcion:								*
+*	Imprime 4 caracteres en el display en una sola			*
+* subrutina, utilizando un arreglo de 4 bytes (caracteres) en memoria	*
+* como input para el display						*
+*									*
+* Params:								*
+* 	- [AccY]: Pos. de memoria de la cadena que			*
+*		desea imprimir						*
+* 									*
+* Nota: no devuelve valores, deja el AccY como estaba			*
+*	antes de ejecutar la subrutina					*
+*************************************************************************
+* [XH] 0 <- (X)
+* [XL] 1
+* [PCH] 2
+* [PCL] 3
+
+println	equ	*
+	pshy		backup Y
+	psha		backup A
+	pshb		backup B
+
+	ldab	#4	;inicio B en 4
+repite	equ	*
+	decb
+	ldaa	0,y	;leo el caracter en cuestion
+	stab	PORTCL	;set the position 0-3
+	staa	PORTB	;set the character
+	iny
+
+	tstb
+	bne	repite
+
+	pulb		recupero backup B
+	pula		recupero backup A
+	puly		recupero backup Y
+	rts
+
+
+
+*****************************************
+*	outchar				*
+* ACCA: Caracter a enviar		*
+* ACCB: Posicion	(0-3)		*
+*****************************************
+outchar	equ	*
+	stab	PORTCL	;set the position
+	staa	PORTB	;set the character
+	rts
+
+*****************************************
+*	initdis				*
+* Inicia el display			*
+*****************************************
+
+initdis	equ	*
+	psha
+	ldaa	#$FF	;set for output
+	staa	DDRC	;C output
+	ldaa	PIOC	;get current value
+	anda	#$FE	;reset bit 0 to 0
+	staa	PIOC	;send it out
+	pula
+	rts
+
+
+
+
+
+
+	ORG	$3000		FLACO ESTO VA AL FINAL DEL CODIGO
+stack	RMB	50
+stk_ini	EQU	*-1
+
+	END
