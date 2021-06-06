@@ -1,0 +1,38 @@
+*************************************************************************
+*	OPERATION HANDLERS		op_hand.def			*
+*									*
+* Estas macros son usadas para manejar las operaciones			*
+* aritmeticas de la calculadora						*
+*************************************************************************
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  01:04		*
+*************************************************************************
+*		OPERATION HANDLER (OP_HAND) 				*
+* Descripción:								*
+*	Macro para preparar los parametros de las operaciones		*
+*	aritmeticas, ejecutar las subrutinas y saltar a las determinadas*
+*	secciones de error o muestra de resultados			*
+*	Realiza una operacion aritmetica entre op1 y AccB		*
+*									*
+*	@ Recibe por [AccB] el operando de 8 bytes			*
+*									*
+* Params:								*
+*	-op_name: 	[subrutina] (op_suma|op_resta)			*
+*	-op1:	[direccion de memoria] de la variable input de 2 bytes	*
+*	-error:	[rotulo] para hacer branch en caso de error		*
+*	-pass:	[rotulo] para hacer branch en caso de operacion exitosa	*
+*									*
+* 	SINTAXIS:	%op_hand op_name,op1,error,pass			*
+*************************************************************************
+	macro %op_hand
+	ldy	\1		cargo la variable a operar con AccB
+	pshy			y la paso por stack 
+	jsr	\0		todas las operaciones aritmeticas reciben y devuelven 2 bytes por stack
+	puly			
+	sty	\1		guardo el resultado (sin juzgar su validez)
+	bcs	\2		C=1 error
+	bcc	\3		C=0 ok    branch segun el resultado de la operacion
+	endmac

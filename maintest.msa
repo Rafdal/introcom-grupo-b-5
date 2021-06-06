@@ -1,42 +1,107 @@
+*************************************************************************
+*	MAIN TESTING			maintest.msa			*
+*************************************************************************
 	p68h11
+*************************************************************************
+*	DEPENDENCIAS: 							*
+*		- UI_v2.msa: 	initdis,clrdis,println,waitkey,outchar	*
+*		- string.msa: 	strlen,int4str				*
+*		- math_ops.msa:	op_suma					*
+*		- utils.msa:	delay					*
+*									*
+*		- str_hand.def (string handlers)			*
+*		- op_hand.def (operation handlers)			*
+*************************************************************************
+	extern	initdis,clrdis,println,waitkey,outchar
+	extern	strlen,int4str
+	extern	op_suma
+	extern	delay
 
-*	DEPENDENCIAS: 
-*		[UI_v2.msa]: 	initdis,clrdis,println,waitkey,outchar
-*		[string.msa]: 	strlen,int2str
-*		[math_ops.msa]:	op_suma
+$str_hand.def			Incluyo los handlers para string.msa
+$op_hand.def			Incluyo los handlers para math_ops.msa
 
-	extern	initdis,clrdis,println,waitkey,outchar,strlen,int2str
 	public	main
-
 	rseg	VARS
-strvar	RMB	4
-text1	FCC	'TEST'
+str_var	FCC	'    '		reservo e inicio la cadena en cero (equivale a un RMB y FCC juntos)
+err_msg	FCC	'ERR '
+
+op1	RMB	2		
+
+
 
 	rseg	CODE
+*****************************************************************
+*			MAIN					*
+*****************************************************************
 main	EQU	*
 	lds	#stk_ini
+	jsr	setup		ejecuto la configuración inicial
+
+	ldab	#75		op2 = B
+	sty	op1		op1 = Y
+	%op_hand op_suma,op1,op_err,op_ok
+
+*********************************************************
+* 		OPERATION ERROR				*
+* Si la operacion falla, muestra error y termina	*
+op_err	equ	*	
+	jsr	error		muestro mensaje de error
+	jsr	delay		delay
+	bra	endloop		RETORNO
 
 
-fin1	jmp	fin1
+*********************************************************
+* 		OPERATION OK				*
+* Si la operacion es exitosa, muestra el resultado	*
+op_ok	equ	*			operacion EXITOSA
+	%int4str op1,str_var,pass	;lo convierto string y lo guardo en str_var
+	jsr	error			
+	jsr	delay			si la conversion falla, muestro el mensaje de error
+	bra	endloop
 
-	pshx
+pass	%println str_var		;imprimo la cadena str_var
+	bra	endloop
 
-	jsr	initdis
-	jsr	clrdis
 
-	des
-	jsr	int2str
-
-	pulx
-	stx	strvar
-	pula
-	staa	strvar+2
-
-	ldy	#strvar
-	jsr	println
-
+*********************************************************
+* 		END OF LOOP				*
+*********************************************************
+endloop	equ	*
+*	bra	loop
 fin	jmp	fin
 
+
+
+
+
+
+
+
+
+
+*********************************************************
+*		SUBRUTINA SETUP				*
+* Descripción:						*
+*	Realiza todas las configuraciones iniciales	*
+*********************************************************
+setup	EQU	*
+	jsr	initdis		inicio el display y teclado
+	jsr	clrdis		borro el display
+* clr	op1
+* clr	op1+1		inicio op1 en cero
+	rts
+
+
+*********************************************************
+*		SUBRUTINA ERROR CASE			*
+* Descripción:						*
+*	Ejecuta las funciones en caso de error		*
+*********************************************************
+* TODO: Implementar errores particulares para div,mul,res
+*********************************************************
+error	EQU	*
+	%println err_msg	;muestro mensaje de error
+	rts
 
 
 

@@ -1,49 +1,16 @@
+*************************************************************************
+*	STRING FUNCTIONS		string.msa			*
+*************************************************************************
 	p68h11
 	
-	public	strlen,int2str
+	public	strlen,int4str
 
 
 	rseg	CODE
 	
-*********************************************************
-*		SUBRUTINA STRLEN			*
-* Esta subrutina devuelve por el [registro B], el largo	*
-* de una cadena de texto con terminador nulo, cuya 	*
-* direccion de memoria es pasada como parametro		*
-* por el [registro X]					*
-*							*
-* Input:  [AccIX]: direccion de memoria de la cadena	*
-* Output: [AccB]: largo de la cadena sin contar el term *
-*							*
-* Nota: El maximo de la cadena es de 255 con el		*
-*	terminador, si la cadena no presenta terminador	*
-*	nulo, devuelve el overflow en 1			*
-*********************************************************
-strlen	EQU	*
-	psha			backup de A
-	pshx			backup de X
-	
-	ldab	#$FF		Cargo las repeticiones del contador en B
-
-busca	ldaa	0,x		Leo el caracter actual
-	beq	found		Si es cero, significa que es el terminador nulo
-	inx			Si no es, voy a la siguiente posicion de la cadena
-	decb			Decremento el contador de cantidad de repeticiones
-	bne	busca		Si no es cero, repite la busqueda del caracter NULL
-
-	sev			si no encontre el terminador, seteo el overflow en 1
-	bra	return		salgo
-
-found	comb			Invierto el valor de B para obtener la cantidad de caracteres contados
-*				('comb' devuelve overflow en 0 siempre)
-
-return	pulx			recupero backup de X
-	pula			recupero backup de B
- 	rts
-
 
 *************************************************************************
-*		# TESTED WORKING STABLE #	Sat 05  18:27		*
+*		# TESTED WORKING STABLE #	Sat 05  18:27		*   DEPRECATED !
 *****************************************************************************************
 *			INTEGER TO STRING  (INT2STR)					*
 * Descripcion: Recibe un numero entero de 16 bits por stack y lo representa en una	*
@@ -51,11 +18,11 @@ return	pulx			recupero backup de X
 *	stack. Si se excede de 999, da error (carry=1).					*
 * 											*
 * Inputs (via stack): [ num ] (2 bytes)							*
-* Outputs:  [ char0 ] [ char1 ] [ char2 ]						*
+* Outputs (via stack):  [ char0 ] [ char1 ] [ char2 ]					*
 *											*
+* Nota: Se debe hacer 1 byte de espacio en el stack luego de pushear num		*
 *****************************************************************************************
 *  stack frame:
-* 
 * [    Y H     ] 0 <-(Y)
 * [    Y L     ] 1
 * [   PC  H    ] 2
@@ -99,6 +66,99 @@ retorno	equ	*		retorno de la subrutina
 	pula
 	puly
 	rts
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  00:24		*
+*****************************************************************************************
+*		INTEGER TO STRING v2 (INT4STR)		### version 2 ###		*
+*											*
+* Descripcion: Recibe un numero entero de 16 bits por stack y lo representa en una	*
+*	cadena de texto de 3 caracteres ASCII (max 999) la cual guarda en la direccion	*
+*	de memoria a la que apunta el puntero IY					*
+*	Si se excede de 999, da error (carry=1).					*
+* 											*
+* Inputs: 										*
+*	- num: [STACK] Numero a convertir (2 bytes)					*
+*	- outStr: [AccIY] direccion de memoria a guardar la cadena			*
+* 											*
+* Outputs: ninguno									*
+* NOTA IMPORTANTE: Se deben liberar 2 bytes del stack					*
+* ERROR CASE: num > 999  (Carry=1)							*
+*****************************************************************************************
+* Comentario del programador:  Hicimos esta nueva subrutina para no modificar int2str	*
+*	por falta de tiempo y porque la misma ya estaba testeada			*
+*****************************************************************************************
+*  stack frame:
+* [  X H  ] 0 <-(X)
+* [  X L  ] 1
+* [  PC H ] 2
+* [  PC L ] 3
+* [ num H ] 4
+* [ num L ] 5
+int4str	equ	*
+	pshx
+	tsx
+	psha
+
+	ldd	4,x		leo el numero a convertir
+	xgdx			X<-->D
+	pshx			paso el numero por stack
+	xgdx			X<-->D
+	des			creo espacio en el stack
+	jsr	int2str		ejecuto la subrutina vieja
+	pulx			
+	stx	0,y		guardo el output en la variable output
+	pula
+	staa	2,y		NOTAR que 'stx' y 'staa' no modifican el carry
+
+	pula
+	pulx
+	rts
+
+
+
+
+*************************************************************************
+*		# NOT TESTED #						* NOT USED!
+*************************************************************************
+*		SUBRUTINA STRLEN			*
+* Esta subrutina devuelve por el [registro B], el largo	*
+* de una cadena de texto con terminador nulo, cuya 	*
+* direccion de memoria es pasada como parametro		*
+* por el [registro X]					*
+*							*
+* Input:  [AccIX]: direccion de memoria de la cadena	*
+* Output: [AccB]: largo de la cadena sin contar el term *
+*							*
+* Nota: El maximo de la cadena es de 255 con el		*
+*	terminador, si la cadena no presenta terminador	*
+*	nulo, devuelve el overflow en 1			*
+*********************************************************
+strlen	EQU	*
+	psha			backup de A
+	pshx			backup de X
+	
+	ldab	#$FF		Cargo las repeticiones del contador en B
+
+busca	ldaa	0,x		Leo el caracter actual
+	beq	found		Si es cero, significa que es el terminador nulo
+	inx			Si no es, voy a la siguiente posicion de la cadena
+	decb			Decremento el contador de cantidad de repeticiones
+	bne	busca		Si no es cero, repite la busqueda del caracter NULL
+
+	sev			si no encontre el terminador, seteo el overflow en 1
+	bra	return		salgo
+
+found	comb			Invierto el valor de B para obtener la cantidad de caracteres contados
+*				('comb' devuelve overflow en 0 siempre)
+
+return	pulx			recupero backup de X
+	pula			recupero backup de B
+ 	rts
+
+
+
 
 
 	END

@@ -1,13 +1,12 @@
-
+*************************************************************************
+*	USER INTERFACE MODULES	v2		UI_v2.msa		*
+*									*
+* subrutinas para controlar el display y declado			*
+*************************************************************************
         p68h11
 
 	public	initdis,waitkey,outchar,println,clrdis
 
-*********************************************************
-*		USER INTERFACE MODULES	v2		*
-*							*
-* subrutinas para controlar el display y declado	*
-*********************************************************
 
 
 ******* Ports ***************************

@@ -3,10 +3,18 @@
 !*.json
 !*.code-snippets
 
+# Handlers
+!str_hand.def
+!op_hand.def
+
+# Modules
+!utils.msa
 !string.msa
 !math_ops.msa
-!maintest.msa
 !UI_V2.msa
+
+# main
+!maintest.msa
 
 TP5*
 TP3*
