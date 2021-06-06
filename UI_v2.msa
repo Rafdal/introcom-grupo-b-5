@@ -248,7 +248,7 @@ outchar	equ	*
 
 initdis	equ	*
 	psha
-	ldaa	#$FF	;set for output
+	ldaa	#$0F	;set for output
 	staa	DDRC	;C output
 	ldaa	PIOC	;get current value
 	anda	#$FE	;reset bit 0 to 0

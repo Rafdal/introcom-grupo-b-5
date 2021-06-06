@@ -11,6 +11,8 @@
 *									*
 *		- str_hand.def (string handlers)			*
 *		- op_hand.def (operation handlers)			*
+*									*
+* link11_2 maintest,UI_v2,string,math_ops,utils				*
 *************************************************************************
 	extern	initdis,clrdis,println,waitkey,outchar
 	extern	int4str
@@ -37,7 +39,7 @@ main	EQU	*
 	lds	#stk_ini
 	jsr	setup		ejecuto la configuracion inicial
 
-	jmp	tstloop		MUST DELETE
+	jmp	tstloop		!!! MUST DELETE !!!
 
 	sty	op1		op1 = Y
 	%op_hand op_mul,op1,op_err,op_ok
@@ -73,7 +75,10 @@ fin	jmp	fin
 
 
 
-
+FIL0	equ	00001110b  	; mascaras para manejo de filas
+FIL1	equ	00001101b
+FIL2	equ	00001011b
+FIL3	equ	00000111b
 
 
 *********************************************************
@@ -81,7 +86,7 @@ fin	jmp	fin
 *********************************************************
 tstloop	equ	*
 	jsr	waitkey
-	%switch	CAS,0,2
+	%switch	CAS,0,5
 	bra	break		si no cumple ningun caso salto a break
 CAS0000	EQU	*		case AccA=0
 	%print '0',0
@@ -91,6 +96,15 @@ CAS0001	EQU	*		case AccA=1
 	bra	break
 CAS0002	EQU	*		case AccA=2
 	%print '2',0
+	bra	break
+CAS0003	EQU	*		case AccA=3
+	%print '3',0
+	bra	break
+CAS0004	EQU	*		case AccA=4
+	%print '4',0
+	bra	break
+CAS0005	EQU	*		case AccA=5
+	%print '5',0
 	bra	break
 break	equ	*		retorno
 
