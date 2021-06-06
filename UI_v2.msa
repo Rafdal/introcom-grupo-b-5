@@ -10,29 +10,34 @@
 
 	public	initdis,waitkey,outchar,println,clrdis
 
-
-
 ******* Ports ***************************
 
-DDRC	equ	$1007       	; data direction register for C
-PIOC	equ	$1002       	; for strobe B assertion change
-PORTCL	equ 	$1005       	; port C latched
-PORTB	equ 	$1004		; port B
+DDRC	equ	$1007		; data direction register for C
+PIOC	equ	$1002		; for strobe B assertion change
+PORTCL	equ	$1005		; port C latched
+PORTB	equ	$1004		; port B
 PORTC	equ	$1003		; rows
+
+
+******* Cols and Row Ports **************
+
+ROWS	equ	PORTC		; outputs
+COLS	equ	PORTCL		; inputs
 
 ***** Row and column Masks *************************
 
-FILA0	equ	00001110b  	; mascaras para manejo de filas
-FILA1	equ	00001101b
-FILA2	equ	00001011b
-FILA3	equ	00000111b
+FIL0	equ	00001110b  	; mascaras para manejo de filas
+FIL1	equ	00001101b
+FIL2	equ	00001011b
+FIL3	equ	00000111b
 
-COLUMN0	equ	11100000b	; mascaras para manejo de columnas
-COLUMN1	equ	11010000b
-COLUMN2	equ	10110000b
+COL0	equ	11100000b	; mascaras para manejo de columnas
+COL1	equ	11010000b
+COL2	equ	10110000b
+COL3	equ	01110000b	
 
-****** Nibble Mask ********************
-NIBMASK	equ	$F0
+****** Keyboard Mask ********************
+MASKOUT	equ	11110000b
 
 	rseg	CODE
 
@@ -42,6 +47,11 @@ NIBMASK	equ	$F0
 *													*
 *********************************************************************************************************
 
+
+*	/!\	NOT PASSING
+*************************************************************************
+*		# NOT TESTED #		WORK IN PROGRESS		*
+*************************************************************************
 *******************************************************************************************************
 * 
 *	waitkey: devuelve el valor numerico de la tecla presionada en el teclado
@@ -55,28 +65,28 @@ waitkey	equ	*
 	pshb	                ; hago backup del registro B
 _input  equ     *      		; loop de chequeo: se fija si hay input
 
-fi0	ldaa	#FILA0		; cargo la fila 0 con un 0
+fi0	ldaa	#FIL0		; cargo la fila 0 con un 0
 	staa	PORTC
 	ldab	#0		; cargo B con el numero de fila
-	jsr	evalfil
+	jsr	convert
 	bcc	finin		; si se encontro el numero, termino
 
-fi1	ldaa	#FILA1		; cargo la fila 1 con un 0
+fi1	ldaa	#FIL1		; cargo la fila 1 con un 0
 	staa	PORTC
 	ldab	#1		; cargo B con el numero de fila
-	jsr	evalfil
+	jsr	convert
 	bcc	finin		; si se encontro el numero, termino
 
-fi2	ldaa	#FILA2		; cargo la fila 2 con un 0
+fi2	ldaa	#FIL2		; cargo la fila 2 con un 0
 	staa	PORTC
 	ldab	#2		; cargo B con el numero de fila
-	jsr	evalfil
+	jsr	convert
 *				; si se encontro el numero, termino
 
-fi3	ldaa	#FILA3		; cargo la fila 3 con un 0
+fi3	ldaa	#FIL3		; cargo la fila 3 con un 0
 	staa	PORTC
 	ldab	#3		; cargo B con el numero de fila
-	jsr	evalfil
+	jsr	convert
 	bcc	finin		; si se encontro el numero, termino
 
 	sec			; si no encontro el numero, pongo el carry en 1.
@@ -90,18 +100,16 @@ endin	pulb			; recupero el registro B
 
 
 
-*************************************************************************************************
-*				EVALFIL 							*
-* Desc: Evalua el valor devuelto por el teclado (una vez que es cargada				*
-*	la mascara de fila) y segun el numero de fila que se evaluo, devuelve el ID de la tecla	*
-*	presionada en hexadecimal (de $0 a $F)								*
+*******************************************************************************************************
+*
+*	convert: dados un numero de fila y el valor devuelto por el teclado en dicha fila
 *		devuelve el numero apretado en el teclado en valor hexadecimal
 *		- Recibe por B el numero de fila donde se lo encontro (0-3)
 *		- Devuelve por B el numero apretado en el teclado en valor hexadecimal
 *		- Pone el carry en 1 si no encontro el numero, y en 0 en caso de haberlo encontrado
-* 
+*
 *******************************************************************************************************
-evalfil	equ	*
+convert	equ	*
 
 	psha
 
@@ -109,24 +117,24 @@ evalfil	equ	*
 	mul			; hago que B valga el menor numero que aparece entre las teclas de la fila
 	
 	ldaa	PORTC		; leo el puerto C
-	anda	#NIBMASK	; hago una mascara para obtener solo los 4 bits mas significativos (columnas)
+	anda	#MASKOUT	; hago una mascara para obtener solo los 4 bits mas significativos (columnas)
 	
-	cmpa	#NIBMASK
+	cmpa	#MASKOUT
 	beq	_input  	; de ser todos 1, no se apreto ninguna tecla, termino la subrutina
 
-	cmpa	#COLUMN0		
+	cmpa	#COL0		
 	bne	sig1		; si la tecla apretada no estaba en la columna 0, me fijo si fue en 1
-	ldaa	#0		; si fue en 0, cargo en A el valor num�rico 0
+	ldaa	#0		; si fue en 0, cargo en A el valor numerico 0
 	bra	multi		; voy a calcular el numero
 
-sig1	cmpa	#COLUMN1		
+sig1	cmpa	#COL1		
 	bne	sig2		; si la tecla apretada no estaba en la columna 1, me fijo si fue en 2
-	ldaa	#1		; si fue un 1, cargo en A el valor num�rico 1
+	ldaa	#1		; si fue un 1, cargo en A el valor numerico 1
 	bra	multi		; voy a calcular el numero
 
-sig2	cmpa	#COLUMN2
+sig2	cmpa	#COL2
 	bne	sig3		; si la tecla apretada no estaba en la columna 2, debe estar en 3
-	ldaa	#2		; si fue un 2, cargo en A el valor num�rico 2
+	ldaa	#2		; si fue un 2, cargo en A el valor numerico 2
 	bra	multi		; voy a calcular el numero
 
 sig3	ldaa	#3		; en este punto la tecla apretada debe ser de la columna 3, por lo que cargo un 3 en A
@@ -140,15 +148,18 @@ multi	aba			; le sumo al valor de A (la columna), el valor de B, que apuntaba a 
 	staa	PORTC		; actualizamos el puerto C para poder visualizar la tecla apretada
 	
 soltar	ldaa	PORTC		
-	anda	#NIBMASK	; esperamos a que se suelte la tecla para que el programa siga, y asi poder mandar
-	cmpa	#NIBMASK	; un caracter por vez que se presiona la tecla
+	anda	#MASKOUT	; esperamos a que se suelte la tecla para que el programa siga, y asi poder mandar
+	cmpa	#MASKOUT	; un caracter por vez que se presiona la tecla
 	bne	soltar
 
-	bra	fincon		; pongo el carry en 0, indicando que encontr� el numero
+	bra	fincon		; pongo el carry en 0, indicando que encontro el numero
 
 fincon	pula
 
 	rts
+
+
+
 
 
 *************************************************************************

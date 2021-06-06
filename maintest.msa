@@ -17,8 +17,10 @@
 	extern	op_suma,op_rest,op_div,op_mul
 	extern	delay
 
-$str_hand.def			Incluyo los handlers para string.msa
-$op_hand.def			Incluyo los handlers para math_ops.msa
+$str_hand.def		Incluyo los handlers para string.msa
+$op_hand.def		Incluyo los handlers para math_ops.msa
+
+$flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
 	public	main
 	public	str_var,op1
@@ -34,6 +36,8 @@ OP2	EQU	2
 main	EQU	*
 	lds	#stk_ini
 	jsr	setup		ejecuto la configuracion inicial
+
+	jmp	tstloop		MUST DELETE
 
 	sty	op1		op1 = Y
 	%op_hand op_mul,op1,op_err,op_ok
@@ -72,7 +76,25 @@ fin	jmp	fin
 
 
 
+*********************************************************
+*		TESTING LOOP				*
+*********************************************************
+tstloop	equ	*
+	jsr	waitkey
+	%switch	CAS,0,2
+	bra	break		si no cumple ningun caso salto a break
+CAS0000	EQU	*		case AccA=0
+	%print '0',0
+	bra	break
+CAS0001	EQU	*		case AccA=1
+	%print '1',0
+	bra	break
+CAS0002	EQU	*		case AccA=2
+	%print '2',0
+	bra	break
+break	equ	*		retorno
 
+	bra	tstloop
 
 
 *********************************************************

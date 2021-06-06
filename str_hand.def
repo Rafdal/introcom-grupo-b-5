@@ -42,6 +42,26 @@
 
 
 
+*************************************************************************
+*		# NOT TESTED #		WORK IN PROGRESS		*
+*************************************************************************
+*			PRINTLN (HANDLER)				*
+* Descripcion:								*
+*	Recibe un caracter y la posicion del display donde se lo desea	*
+*	imprimir							*
+* Sintaxis:								*
+*	%println char,pos						*
+*************************************************************************
+	macro	%print
+	psha
+	pshb
+	ldaa	#\0
+	ldab	#\1
+	jsr	outchar
+	pulb
+	pula
+	endmac
+
 
 *************************************************************************
 *		# TESTED WORKING STABLE #	Sat 05  22:13		*
