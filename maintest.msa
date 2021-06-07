@@ -51,13 +51,12 @@ loop	equ	*
 	ldy	#str_var
 	%int4str op1,str_var,pass0
 pass0	%println str_var
+* jsr	waitkey			AccA = keyID
+* cmpa	#9		chequeo si esta en el rango 0-9 (numero)
+* bls	isNum		si es un numero, lo analizo aparte
 
 next01	equ	*
 
-*---------------------------------------------------------------------------
-	jsr	stop	E R R O R   T E S T I N G
-ERRORS	EQU	2
-*---------------------------------------------------------------------------
 	
 	ldy	#str_var		cargo la direccion de la cadena usada por el display
 	jsr	numForm			formulario de entrada (AccA = code, AccB = inputVal)
@@ -66,6 +65,10 @@ ERRORS	EQU	2
 * staa	lastop			Si presiono el (=), ejecuto dicho caso
 skip	staa	thisop			guardo el codigo de operacion actual
 
+*---------------------------------------------------------------------------
+	jsr	stop	E R R O R   T E S T I N G
+ERRORS	EQU	255
+*---------------------------------------------------------------------------
 
 
 *********** SWITCH SEGUN LAST OP ******************************************
@@ -92,13 +95,13 @@ OP0004	equ	*			4 - MULTIPLICA (*) E
 	%op_hand op_mul,op1,op_err,op_ok		op1 = op1 * B
 
 OP0005	equ	*			5 - IGUAL (=) F
-	%println str_var		muestro la cadena
-wait	jsr	waitkey
-	cmpa	#9		Si presiono otro numero, espero
-	bls	wait
-	suba	#10		Sino, resto el el desfase numerico
-	staa	lastop		Guardo la tecla de control que haya presionado
-	bra	endloop
+* 	%println str_var		muestro la cadena
+* wait	jsr	waitkey
+* 	cmpa	#9		Si presiono otro numero, espero
+* 	bls	wait
+* 	suba	#10		Sino, resto el el desfase numerico
+* 	staa	lastop		Guardo la tecla de control que haya presionado
+	bra	pass
 
 
 *********************************************************
