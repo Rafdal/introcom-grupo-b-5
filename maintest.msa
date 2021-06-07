@@ -20,7 +20,7 @@
 	extern	op_suma,op_rest,op_div,op_mul
 	extern	delay
 
-* extern	debug,initdeb		(DEBUG)
+	extern	debug,initdeb	(D E B U G )
 
 
 *********************************************************
@@ -39,7 +39,7 @@ $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 	public	main
 	public	str_var,op1,lastop	para trackear las vars globales del programa
 
-* 	public	ercount,counter		(DEBUG) vars. globales para depurar errores
+	extern	ercount,counter	(D E B U G) vars. globales para depurar errores
 
 	rseg	CODE
 *****************************************************************
@@ -52,7 +52,7 @@ main	EQU	*
 
 
 loop	equ	*
-* inc	counter			increment loop counter (DEBUG)
+	inc	counter	(D E B U G) increment loop counter
 
 *********************************************************
 *		TO-DO	REVISAR ! MODIFICAR !
@@ -125,6 +125,11 @@ pass	equ	*			;
 	bra	endloop
 
 
+*---------------------------------------------------------------------------
+* Arrastrar por el cógido para detener el programa luego de N repeticiones:
+	jsr	debug	E R R O R   T E S T I N G
+ERRORS	EQU	250
+*---------------------------------------------------------------------------
 *********************************************************
 * 		END OF LOOP				*
 *********************************************************
@@ -151,9 +156,16 @@ setup	EQU	*
 	stx	op1		inicio op1 en cero
 	stx	str_var+2	borro los ultimos caracteres de str_var
 	
-* ldaa	#ERRORS		(DEBUG) inicio las funciones de depuracion
-* jsr	initdeb
+
+
+
+	ldaa	#ERRORS
+	jsr	initdeb ( D E B U G) inicio las funciones de depuracion
+	
 *				Inicio el status code del ultimo operador en 0 (+) para
+* ldaa	#5
+* staa	lastop
+* staa	thisop
 	clr	lastop		sumar el primer valor con 0 (cero), de esta forma lo guardo
 	clr	thisop
 	rts

@@ -7,6 +7,7 @@
         p68h11
 
 	extern	push_L,push_R,str2int
+	extern	debug
 
 	public	initdis,waitkey,outchar,println,clrdis,numForm
 
@@ -34,16 +35,19 @@ FIL3	equ	00000111b
 COL0	equ	11100000b	; mascaras para manejo de columnas
 COL1	equ	11010000b
 COL2	equ	10110000b
-COL3	equ	01110000b	
 
 ****** Keyboard Mask ********************
-MASKOUT	equ	11110000b
+NIBMASK	equ	$F0		; nibble mask
+
+
+	rseg	VARS
+
+
 
 	rseg	CODE
 
-
 $str_hand.def			string handlers
-
+$flowctrl.def			flow control (switch case)
 
 
 *************************************************************************
@@ -89,9 +93,46 @@ numForm	EQU	*
 	aby			agrego el offset
 	
 
+
+
+
+
+
 ***************** WIP ******************* (codigo enmendado)
+*				HARDCODEO UN SWITCH CASE
 	ldaa	0,x		si la ultima op fue (=)[F]code=5
-	cmpa	#5		
+
+********************* SWITCH CASE *******************************
+	%switch	SG,0,4		Switch Case segun valor de [AccA]
+	bra	endsw		default
+SG0000	equ	*
+	%print	'+',3
+	bra	endsw
+
+SG0001	equ	*
+	%print	'-',3
+	bra	endsw
+
+SG0002	equ	*
+	bra	endsw
+
+SG0003	equ	*
+	%print	'%',3
+	bra	endsw
+
+SG0004	equ	*
+	%print	'X',3
+	bra	endsw
+
+endsw	equ	*
+******************* END OF SWITCH ******************
+
+next0	cmpa	#1
+	bne	next1
+	%print	'-',3
+	bra	break
+
+next1	cmpa	#5		
 	bne	break		si no fue, voy a imprimir por pantalla
 
 isNum0	jsr	waitkey
@@ -209,25 +250,25 @@ waitkey	equ	*
 fi0	ldaa	#FIL0		; cargo la fila 0 con un 0
 	staa	PORTC
 	ldab	#0		; cargo B con el numero de fila
-	jsr	convert
+	jsr	getCol
 	bcc	finin		; si se encontro el numero, termino
 
 fi1	ldaa	#FIL1		; cargo la fila 1 con un 0
 	staa	PORTC
 	ldab	#1		; cargo B con el numero de fila
-	jsr	convert
+	jsr	getCol
 	bcc	finin		; si se encontro el numero, termino
 
 fi2	ldaa	#FIL2		; cargo la fila 2 con un 0
 	staa	PORTC
 	ldab	#2		; cargo B con el numero de fila
-	jsr	convert
+	jsr	getCol
 	bcc	finin		; si se encontro el numero, termino
 
 fi3	ldaa	#FIL3		; cargo la fila 3 con un 0
 	staa	PORTC
 	ldab	#3		; cargo B con el numero de fila
-	jsr	convert
+	jsr	getCol
 	bcc	finin		; si se encontro el numero, termino
 
 	sec			; si no encontro el numero, pongo el carry en 1.
@@ -243,14 +284,14 @@ endin	pulb			; recupero el registro B
 
 *******************************************************************************************************
 * 
-*	convert: dados un numero de fila y el valor devuelto por el teclado en dicha fila
+*	getCol: dados un numero de fila y el valor devuelto por el teclado en dicha fila
 *		devuelve el numero apretado en el teclado en valor hexadecimal
 *		- Recibe por B el numero de fila donde se lo encontro (0-3)
 *		- Devuelve por B el numero apretado en el teclado en valor hexadecimal
 *		- Pone el carry en 1 si no encontro el numero, y en 0 en caso de haberlo encontrado
 * 
 *******************************************************************************************************
-convert	equ	*
+getCol	equ	*
 
 	psha
 
@@ -258,10 +299,10 @@ convert	equ	*
 	mul			; hago que B valga el menor numero que aparece entre las teclas de la fila
 	
 	ldaa	PORTC		; leo el puerto C
-	anda	#MASKOUT	; hago una mascara para obtener solo los 4 bits mas significativos (columnas)
+	anda	#NIBMASK	; $F0		; nibble mask una mascara para obtener solo los 4 bits mas significativos (columnas)
 	
-	cmpa	#MASKOUT
-	beq	sinnum  	; de ser todos 1, no se apreto ninguna tecla, termino la subrutina
+	cmpa	#NIBMASK
+	beq	sinnum		; nibble mask  	; de ser todos 1, no se apreto ninguna tecla, termino la subrutina
 
 	cmpa	#COL0		
 	bne	sig1		; si la tecla apretada no estaba en la columna 0, me fijo si fue en 1
@@ -289,8 +330,8 @@ multi	aba			; le sumo al valor de A (la columna), el valor de B, que apuntaba a 
 	staa	PORTC		; actualizamos el puerto C para poder visualizar la tecla apretada
 	
 soltar	ldaa	PORTC		
-	anda	#MASKOUT	; esperamos a que se suelte la tecla para que el programa siga, y asi poder mandar
-	cmpa	#MASKOUT	; un caracter por vez que se presiona la tecla
+	anda	#NIBMASK	; $F0		; nibble mask a que se suelte la tecla para que el programa siga, y asi poder mandar
+	cmpa	#NIBMASK	; $F0		; nibble mask caracter por vez que se presiona la tecla
 	bne	soltar
 
 	bra	fincon		; pongo el carry en 0, indicando que encontro el numero

@@ -1,6 +1,6 @@
 	p68h11
 
-	public debug,initdeb
+	public debug,initdeb,counter,ercount
 
 *---------------------------------------------------------------------------
 * Arrastrar por el cógido para detener el programa luego de N repeticiones:
