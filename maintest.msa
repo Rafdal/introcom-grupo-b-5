@@ -65,10 +65,6 @@ next01	equ	*
 * staa	lastop			Si presiono el (=), ejecuto dicho caso
 skip	staa	thisop			guardo el codigo de operacion actual
 
-*---------------------------------------------------------------------------
-	jsr	stop	E R R O R   T E S T I N G
-ERRORS	EQU	255
-*---------------------------------------------------------------------------
 
 
 *********** SWITCH SEGUN LAST OP ******************************************
@@ -83,9 +79,7 @@ OP0001	equ	*			1 - RESTA (-) B
 	%op_hand op_rest,op1,op_err,op_ok
 	
 OP0002	equ	*			2 - CLEAR (C) C
-	clr	op1			inicio op1 en cero
-	clr	op1+1			Inicio el status code en (+) para sumar el primer
-	clr	lastop			valor con cero, de esta forma lo guardo
+	jsr	setup
 	bra	endloop
 
 OP0003	equ	*			3 - DIVIDE (/) D
@@ -95,12 +89,6 @@ OP0004	equ	*			4 - MULTIPLICA (*) E
 	%op_hand op_mul,op1,op_err,op_ok		op1 = op1 * B
 
 OP0005	equ	*			5 - IGUAL (=) F
-* 	%println str_var		muestro la cadena
-* wait	jsr	waitkey
-* 	cmpa	#9		Si presiono otro numero, espero
-* 	bls	wait
-* 	suba	#10		Sino, resto el el desfase numerico
-* 	staa	lastop		Guardo la tecla de control que haya presionado
 	bra	pass
 
 
@@ -116,13 +104,10 @@ op_err	equ	*
 * 		OPERATION OK				*
 * Si la operacion es exitosa, guardo el resultado	*
 op_ok	equ	*			operacion EXITOSA
+	tstb
+	beq	pass
 
 
-*- POR QUE ESTO ?
-	bra	pass
-	%int4str op1,str_var,pass	;convierto op1 a string y lo guardo en str_var
-	jsr	error			si la conversion falla, muestro el mensaje de error
-	bra	endloop
 
 pass	equ	*			;
 
@@ -140,6 +125,10 @@ endloop	equ	*
 
 
 
+*---------------------------------------------------------------------------
+	jsr	stop	E R R O R   T E S T I N G
+ERRORS	EQU	56
+*---------------------------------------------------------------------------
 
 
 *********************************************************
@@ -193,10 +182,9 @@ error	EQU	*
 	ldy	#0
 	sty	op1		borro op1
 pressC	jsr	waitkey
-	cmpa	#2		espero a que presionen CLEAR
+	cmpa	#$C		espero a que presionen CLEAR
 	bne	pressC
-*					Inicio el status code en (+) para sumar el primer
-	clr	lastop			valor con cero, de esta forma lo guardo
+	jsr	setup		borro el display
 	rts
 
 
