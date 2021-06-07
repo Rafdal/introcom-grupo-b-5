@@ -10,7 +10,7 @@
 	
 
 *************************************************************************
-*		# NOT TESTED #		WORK IN PROGRESS		*
+*		# NOT FULLY TESTED #		WORK IN PROGRESS	*	PASSING
 *****************************************************************************************
 *				STRING TO INTEGER (STR2INT)				*
 *											*
@@ -54,8 +54,6 @@ skip1	aba			sumo el decimal con el unitario en ASCII y lo guardo en A
 	tab			B=A
 	pula			recupero backup de A
 	rts
-
-
 
 
 

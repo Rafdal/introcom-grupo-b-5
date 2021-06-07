@@ -1,7 +1,7 @@
 *************************************************************************
 *	USER INTERFACE MODULES	v2		UI_v2.msa		*
 *									*
-* subrutinas para controlar el display y declado			*
+* subrutinas para controlar el display, teclado y carga de datos	*
 *************************************************************************
 
         p68h11
@@ -42,12 +42,12 @@ MASKOUT	equ	11110000b
 	rseg	CODE
 
 
-$str_hand.def
+$str_hand.def			string handlers
 
 
 
 *************************************************************************
-*		# NOT TESTED #		WORK IN PROGRESS		*
+*		# NOT FULLY TESTED #		WORK IN PROGRESS	*
 *************************************************************************
 *			NUM FORM			*
 *	     fomrulario de entrada numerica		*
@@ -88,6 +88,8 @@ numForm	EQU	*
 	ldab	#2		cargo el offset para mostrar los numeros
 	aby			agrego el offset
 	
+
+***************** WIP ******************* (codigo enmendado)
 	ldaa	0,x		si la ultima op fue (=)[F]code=5
 	cmpa	#5		
 	bne	break		si no fue, voy a imprimir por pantalla
@@ -102,9 +104,8 @@ isNum0	jsr	waitkey
 	%print	' ',2		limpio el display
 
 	suba	#10
-* ldy	#$ABCD
-* swi
 	bra	ret
+************** END WIP *******************
 
 loop	equ	*
 	jsr	waitkey		espero a recibir un ID de tecla. AccA = ID
@@ -193,11 +194,12 @@ ret	equ	*
 *************************************************************************
 *		# TESTED WORKING STABLE #	Sun 06  18:15		*
 *******************************************************************************************************
+* 				WAITKEY
+* Descripcion: 
+*	Espera a que se presione una tecla y devuelve el valor numerico 
+*	de la tecla presionada en el teclado por el registro A
 * 
-*	waitkey: devuelve el valor numerico de la tecla presionada en el teclado
-*		por el registro A, para luego poder ser utilizada facilmente como
-*		valor numerico.
-*		- Pone el carry en 1 si no encontro el numero, y en 0 en caso de haberlo encontrado
+* - Pone el carry en 1 si no encontro el numero, y en 0 en caso de haberlo encontrado
 * 
 *******************************************************************************************************
 waitkey	equ	*
@@ -239,16 +241,14 @@ endin	pulb			; recupero el registro B
 
 	rts
 
-
-
 *******************************************************************************************************
-*
+* 
 *	convert: dados un numero de fila y el valor devuelto por el teclado en dicha fila
 *		devuelve el numero apretado en el teclado en valor hexadecimal
 *		- Recibe por B el numero de fila donde se lo encontro (0-3)
 *		- Devuelve por B el numero apretado en el teclado en valor hexadecimal
 *		- Pone el carry en 1 si no encontro el numero, y en 0 en caso de haberlo encontrado
-*
+* 
 *******************************************************************************************************
 convert	equ	*
 
@@ -348,7 +348,10 @@ repite	equ	*
 	rts
 
 
-*********************************************************
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Mon 07  13:09		*
+*************************************************************************
 *		CLEAR	DISPLAY				*
 * Descripcion:						*
 *	Borra el contenido del display 			*

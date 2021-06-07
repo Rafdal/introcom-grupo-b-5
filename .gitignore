@@ -17,9 +17,10 @@
 # main
 !maintest.msa
 
-# module testing env
+# module testing
 !mod_test.msa
 !modtst2.msa
+!debug.msa
 
 TP5*
 TP3*

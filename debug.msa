@@ -1,0 +1,46 @@
+	p68h11
+
+	public debug,initdeb
+
+*---------------------------------------------------------------------------
+* Arrastrar por el cógido para detener el programa luego de N repeticiones:
+*	jsr	debug	E R R O R   T E S T I N G
+* ERRORS	EQU	4
+*---------------------------------------------------------------------------
+
+
+	rseg	VARS
+ercount	RMB	1		error count
+counter	RMB	1		loop count
+
+
+	rseg	CODE
+*********************************************************
+*		INIT DEBUG
+* [AccA]: Cantidad max. repeticiones antes de detenerse
+*********************************************************
+initdeb	equ	*
+	staa	ercount		
+	ldab	#0
+	stab	counter
+	rts
+
+*********************************************************
+*			DEBUG STOP			*
+*********************************************************
+debug	equ	*
+	pshb
+	ldab	ercount
+	cmpb	#0
+	bhi	next
+	ldy	#$AAAA
+	pulb
+fin	jmp	fin		F I N  P A
+	ldy	#$BBBB
+next	dec	ercount
+	pulb
+	rts
+
+
+
+	END
