@@ -41,11 +41,133 @@ MASKOUT	equ	11110000b
 
 	rseg	CODE
 
-*********************************************************************************************************
-*													*
-* Las siguientes subrutinas utilizan las constantes definidas anteriormente para poder funcionar	*
-*													*
-*********************************************************************************************************
+
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  23:34		*
+*************************************************************************
+*			NUM FORM			*
+*	     fomrulario de entrada numerica		*
+* Funcionamiento:					*
+*	Espera a que el usuario ingrese un valor y/o	*
+* presione una tecla de control.			*
+* Retorna con el valor ingresado (si corresponde) y con *
+* el ID de la tecla (status code) de control presionada.*
+*							*
+* Inputs:						*
+* 	[AccIY]: direc. mem. variable global display	*
+* Outputs:						*
+*	[AccB]: numero escrito				*
+*	[AccA]: status code				*
+* 							*
+* STATUS CODES:						*
+*	0 - sumar '+' 		AccB = valor ingresado	*
+*	1 - restar '-'		AccB = valor ingresado	*
+*	2 - CLEAR 		AccB = 0		*
+*	3 - dividir '/'		AccB = valor ingresado	*
+*	4 - multiplicar '*'	AccB = valor ingresado	*
+*	5 - IGUAL '='		AccB = valor ingresado	*
+*********************************************************
+* [  cont  ] 0 <-(X)
+* [  X L   ]
+* [  X L   ]
+* [  PC H  ]
+* [  PC L  ]
+numForm	EQU	*
+	pshx
+	ldaa	#2		cargo la cantidad maxima de caracteres en INPUT
+	psha			creo dicha variable local
+	tsx
+	pshy
+	ldab	#2		cargo el offset para mostrar los numeros
+	aby			agrego el offset
+	
+	bra	break		voy a imprimir por pantalla
+
+loop	equ	*
+	jsr	waitkey		espero a recibir un ID de tecla. AccA = ID
+
+	cmpa	#9		chequeo si esta en el rango 0-9 (numero)
+	bls	isNum		si es un numero, lo analizo aparte
+
+*				si no es un numero, analizo el caracter de control
+	suba	#10		quitando el desface numerico del ID
+
+*****************
+* (AccA)	*
+*  [0] A (+)	*
+*  [1] B (-)	*
+*  [2] C (Clear)*
+*  [3] D (/)	*
+*  [4] E (*)	*
+*  [5] F (=)	*
+*****************
+
+	cmpa	#2
+	bne	ret_val		Si no es el boton Clear, retorno con valores
+
+**************** CLEAR BTN *********************
+	ldab	#2		cargo la cantidad max. de caracteres
+	cmpb	0,x		chequeo la cant. de caracteres usados
+	beq	clear		si ninguno esta usado, voy a clear y salgo de la subrutina
+	
+	ldaa	#' '		sino, agrego un espacio por izquierda
+	jsr	push_L		y borro el caracter de la derecha
+	inc	0,x		incremento la cantidad de caracteres disponibles
+	bra	break		e imprimo por pantalla
+
+
+***************** NUMBER ANALYSIS ***********
+isNum	equ	*		
+	tst	0,x		si la cantidad de caracteres disponibles
+	beq	break		es cero, salgo (no agrego nada)
+	adda	#'0'		Si no lo es, agrego el desfase ASCII del caracter
+	jsr	push_R		y lo agrego al vector
+	dec	0,x		decremento la cantidad de caracteres disponibles
+
+
+break	equ	*
+**************** PRINT ****************
+	ldaa	0,y		cargo los caracteres en memoria
+	ldab	#1		y los muestro por tantalla
+	jsr	outchar
+	ldaa	1,y
+	ldab	#0
+	jsr	outchar
+
+**************** END LOOP **************
+	jmp	loop		repetir*
+**************** END LOOP **************
+
+
+**************** CLEAR ********************
+*  Salgo de la subrutina y borro AccB
+clear	equ	*
+	ldab	#0
+	bra	ret
+
+************* RETURN VALUES *****************
+*  Salgo de la subrutina con retorno de valores
+ret_val	equ	*
+	jsr	str2int
+
+*********** RETORNO DE SUBRUTINA ***********
+ret	equ	*	
+	puly		recupero backup de Y
+	ins		libero byte del stack usado por variable local
+	pulx		recupero backup de X
+	rts
+
+
+
+
+
+
+
+
 
 
 *	/!\	NOT PASSING

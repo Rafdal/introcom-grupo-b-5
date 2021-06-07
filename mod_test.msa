@@ -39,8 +39,11 @@ MASKOUT	equ	11110000b
 $str_hand.def
 $flowctrl.def
 
-	ORG	$0000
+	ORG	$0030
 disvar	FCC	'    '
+
+	ORG	$0040
+op1	RMB	1
 
 	ORG	$0020
 *********************************************************
@@ -51,15 +54,45 @@ main	EQU	*
 	lds	#stk_ini
 	jsr	setup
 
-	ldy	#disvar		cargo la direccion del texto para el display
-	jsr	numForm
+	ldaa	op1
+	psha
 
+	ldy	#disvar		cargo la direccion del texto para el display
+	jsr	numForm		AccA = code, AccB = val
+
+	%switch	OP,0,2
+	pula
+	ldy	#$EEEE
+	bra	end_op
+OP0000	equ	*		0 - sumar '+'
+	ldy	#$AAAA		marco fin
+	pula
+	aba
+	staa	op1
+	bra	end_op
+
+OP0001	equ	*		1 - restar '-'
+	ldy	#$BBBB		marco fin
+	pula
+	sba
+	staa	op1
+	bra	end_op
+
+OP0002	equ	*		2 - CLEAR
+	ldy	#$CCCC		marco fin
+	pula
+	ldaa	#0
+	clr	op1
+	bra	end_op
+
+end_op	equ	*
 fin	jmp	fin
 
 
 
-* FIRST TEST PASSING!
-*********************************************************
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  23:34		*
+*************************************************************************
 *			NUM FORM			*
 *	     fomrulario de entrada numerica		*
 * Funcionamiento:					*
@@ -95,11 +128,13 @@ numForm	EQU	*
 	pshy
 	ldab	#2		cargo el offset para mostrar los numeros
 	aby			agrego el offset
+	
+	bra	break		voy a imprimir por pantalla
 
 loop	equ	*
-	jsr	waitkey		espero a recibir un ID de tecla
+	jsr	waitkey		espero a recibir un ID de tecla. AccA = ID
 
-	cmpa	#9		
+	cmpa	#9		chequeo si esta en el rango 0-9 (numero)
 	bls	isNum		si es un numero, lo analizo aparte
 
 *				si no es un numero, analizo el caracter de control
@@ -148,7 +183,7 @@ break	equ	*
 	jsr	outchar
 
 **************** END LOOP **************
-	bra	loop		repetir*
+	jmp	loop		repetir*
 **************** END LOOP **************
 
 
@@ -156,7 +191,7 @@ break	equ	*
 *  Salgo de la subrutina y borro AccB
 clear	equ	*
 	ldab	#0
-	bra	infin
+	bra	ret
 
 ************* RETURN VALUES *****************
 *  Salgo de la subrutina con retorno de valores
@@ -540,6 +575,50 @@ L05	ldaa	#' '		cargo un espacio
 
 
 
+
+
+*********************************************************
+*		SUBRUTINA delay				*
+*							*
+* Esta subrutina genera un delay de aprox 1s para el	*
+* simluador del wookie					*
+* No recibe ningun parametro ni retorna valores, no 	*
+* hace falta liberar el stack depues de invocarla	*
+*********************************************************
+
+delay	equ	*
+	pshx			Hago backup de los registros	(4 ciclos)
+	pshy							(5 ciclos)
+	psha							(3 ciclos)
+	pshb							(3 ciclos)
+	ldaa	#14		Cargo la cantidad de repeticiones que hare con el loop1. (23 ciclos)
+*								[TOTAL:17]
+
+*	[LOOP1]: n recorridos del loop1 lleva n*(9+T) ciclos, siendo T los ciclos en total del loop2. 
+loop1	ldy	#$D900		Cargo la cantidad de repeticiones que hare con el loop2. (4 ciclos)
+
+* 	[LOOP2]: Un solo recorrido del loop2 lleva 9 ciclos, 55552 ($D900) recorridos del loop2 lleva 499968 ciclos
+loop2	nop			retardo 		(2 ciclos)
+	dey			decremento Y 		(4 ciclos)
+	bne	loop2		salto si no es cero 	(3 ciclos)
+*							[TOTAL:9]
+
+	deca			decremento A	(2 ciclos)
+	bne	loop1		si A!=0, repito (3 ciclos)
+
+
+	ldy	#$12		Retardo 			(5 ciclos)
+	pulb			Recupero el valor 		(4 ciclos)
+	pula			de los	registros		(4 ciclos)
+	puly							(6 ciclos)
+	pulx							(5 ciclos)
+	rts			Retorno de la rubrutina		(5 ciclos)
+*				
+
+
+
+
+
 *****************************************
 *	outchar				*
 * ACCA: Caracter a enviar		*
@@ -564,11 +643,6 @@ initdis	equ	*
 	staa	PIOC	;send it out
 	pula
 	rts
-
-
-
-
-
 
 
 
