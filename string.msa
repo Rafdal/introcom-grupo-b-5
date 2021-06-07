@@ -3,21 +3,69 @@
 *************************************************************************
 	p68h11
 	
-	public	int4str
+	public	int4str,str2int
 
 
 	rseg	CODE
 	
 
+*************************************************************************
+*		# NOT TESTED #		WORK IN PROGRESS		*
+*****************************************************************************************
+*				STRING TO INTEGER (STR2INT)				*
+*											*
+* Descripcion: 										*
+*	Recibe el puntero a una cadena de 2 caracteres compuesta por numeros en	codigo	*
+* ASCII (ej: '27'). Convierte convierte el valor de dicha cadena a un numero de 1 byte	*
+*											*
+* NOTA: No usa el stack para el pasaje de parametros					*
+* Input: 										*
+*	- [AccIY]: direccion de memoria de la cadena a convertir			*
+* Output:										*
+*	- [AccA]: Valor numerico interpretdo de la cadena				*
+* 											*
+* PRECAUCION: LA CADENA DEBE ESTAR FORMADA POR CARACTERES NUMERICOS!			*
+*	LOS CEROS Y ESPACIOS SON TOMADOS COMO CEROS, DA IGUAL DONDE SE ENCUENTRAN	*
+*****************************************************************************************
+str2int	EQU	*
+	pshb			backup de B
+
+	ldaa	0,y		cargo en A el numero mas significativo
+	beq	force0		si es nulo, cargo un cero
+	cmpa	#' '		me fijo si es un espacio
+	bne	skip0		si no es, salteo la correcion
+force0	ldaa	#'0'		cargo un cero forzado
+
+skip0	ldab	#'0'		cargo en B el "0" en ASCII
+	sba			resto el B de A y así tengo el valor de A en unidades
+	ldab	#10		cargo el B con 10
+	mul			multiplico A por 10 para tener el decimal y lo guardo en B
+
+	ldaa	1,y		cargo en A el numero unitario en ASCII
+	beq	force1		si es nulo, cargo un cero
+	cmpa	#' '		me fijo si es un espacio
+	bne	skip1		si no es, salteo la correcion
+force1	ldaa	#'0'		cargo un cero forzado
+
+skip1	aba			sumo el decimal con el unitario en ASCII y lo guardo en A
+	ldab	#48		cargo en B el "0" en ASCII
+	sba			al numero le resto el "0" en ASCII para tenerlo en sistema decimal
+	
+	pulb			recupero backup de B
+	rts
+
+
+
 *************************************************************************   DEPRECATED !
 *		# TESTED WORKING STABLE #	Sat 05  18:27		*   USE INT4STR
 *****************************************************************************************
 *			INTEGER TO STRING  (INT2STR)	[OLD]				*
-* Descripcion: Recibe un numero entero de 16 bits por stack y lo representa en una	*
+* Descripcion: 										*
+*	Recibe un numero entero de 16 bits por stack y lo representa en una		*
 *	cadena de texto de 3 caracteres ASCII (max 999) la cual tambien devuelve por	*
 *	stack. Si se excede de 999, da error (carry=1).					*
 * 											*
-* Usar int4str en vez de esta								*
+* Usar int4str en vez de esta !								*
 * 											*
 * Inputs (via stack): [ num ] (2 bytes)							*
 * Outputs (via stack):  [ char0 ] [ char1 ] [ char2 ]					*
@@ -113,49 +161,6 @@ int4str	equ	*
 	pula
 	pulx
 	rts
-
-
-
-	END
-*************************************************************************
-*		# NOT TESTED #						* NOT USED!
-*************************************************************************
-*		SUBRUTINA STRLEN			*
-* Esta subrutina devuelve por el [registro B], el largo	*
-* de una cadena de texto con terminador nulo, cuya 	*
-* direccion de memoria es pasada como parametro		*
-* por el [registro X]					*
-*							*
-* Input:  [AccIX]: direccion de memoria de la cadena	*
-* Output: [AccB]: largo de la cadena sin contar el term *
-*							*
-* Nota: El maximo de la cadena es de 255 con el		*
-*	terminador, si la cadena no presenta terminador	*
-*	nulo, devuelve el overflow en 1			*
-*********************************************************
-strlen	EQU	*
-	psha			backup de A
-	pshx			backup de X
-	
-	ldab	#$FF		Cargo las repeticiones del contador en B
-
-busca	ldaa	0,x		Leo el caracter actual
-	beq	found		Si es cero, significa que es el terminador nulo
-	inx			Si no es, voy a la siguiente posicion de la cadena
-	decb			Decremento el contador de cantidad de repeticiones
-	bne	busca		Si no es cero, repite la busqueda del caracter NULL
-
-	sev			si no encontre el terminador, seteo el overflow en 1
-	bra	return		salgo
-
-found	comb			Invierto el valor de B para obtener la cantidad de caracteres contados
-*				('comb' devuelve overflow en 0 siempre)
-
-return	pulx			recupero backup de X
-	pula			recupero backup de B
- 	rts
-
-
 
 
 

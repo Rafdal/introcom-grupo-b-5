@@ -1,0 +1,28 @@
+	p68h11
+
+	ORG	$0050
+txt1	FCC	'05'
+
+
+	ORG	$2000
+main	EQU	*
+
+	ldy	#txt1
+	jsr	str2int
+
+
+fin	jmp	fin
+
+
+
+
+
+
+
+
+
+	ORG	$3000		FLACO ESTO VA AL FINAL DEL CODIGO
+stack	RMB	50
+stk_ini	EQU	*-1
+
+	END

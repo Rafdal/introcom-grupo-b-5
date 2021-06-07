@@ -5,7 +5,7 @@
 *************************************************************************
 *	DEPENDENCIAS: 							*
 *		- UI_v2.msa: 	initdis,clrdis,println,waitkey,outchar	*
-*		- string.msa: 	int4str					*
+*		- string.msa: 	int4str,str2int				*
 *		- math_ops.msa:	op_suma,op_rest,op_div,op_mul		*
 *		- utils.msa:	delay					*
 *									*
@@ -15,7 +15,7 @@
 * link11_2 maintest,UI_v2,string,math_ops,utils				*
 *************************************************************************
 	extern	initdis,clrdis,println,waitkey,outchar
-	extern	int4str
+	extern	int4str,str2int
 	extern	op_suma,op_rest,op_div,op_mul
 	extern	delay
 
@@ -85,29 +85,6 @@ FIL3	equ	00000111b
 *		TESTING LOOP				*
 *********************************************************
 tstloop	equ	*
-	jsr	waitkey
-	%switch	CAS,0,5
-	bra	break		si no cumple ningun caso salto a break
-CAS0000	EQU	*		case AccA=0
-	%print '0',0
-	bra	break
-CAS0001	EQU	*		case AccA=1
-	%print '1',0
-	bra	break
-CAS0002	EQU	*		case AccA=2
-	%print '2',0
-	bra	break
-CAS0003	EQU	*		case AccA=3
-	%print '3',0
-	bra	break
-CAS0004	EQU	*		case AccA=4
-	%print '4',0
-	bra	break
-CAS0005	EQU	*		case AccA=5
-	%print '5',0
-	bra	break
-break	equ	*		retorno
-
 	bra	tstloop
 
 

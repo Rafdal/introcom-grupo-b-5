@@ -19,6 +19,7 @@
 
 # module testing env
 !mod_test.msa
+!modtst2.msa
 
 TP5*
 TP3*

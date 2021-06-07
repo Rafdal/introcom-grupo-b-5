@@ -6,12 +6,41 @@
 *********************************************************
 	p68h11
 
-DDRC	equ	$1007       	; data direction register for C
-PIOC	equ	$1002       	; for strobe B assertion change
-PORTCL	equ 	$1005       	; port C latched
-PORTB	equ 	$1004		; port B
+******* Ports ***************************
+
+DDRC	equ	$1007		; data direction register for C
+PIOC	equ	$1002		; for strobe B assertion change
+PORTCL	equ	$1005		; port C latched
+PORTB	equ	$1004		; port B
 PORTC	equ	$1003		; rows
 
+
+******* Cols and Row Ports **************
+
+ROWS	equ	PORTC		; outputs
+COLS	equ	PORTCL		; inputs
+
+***** Row and column Masks *************************
+
+FIL0	equ	00001110b  	; mascaras para manejo de filas
+FIL1	equ	00001101b
+FIL2	equ	00001011b
+FIL3	equ	00000111b
+
+COL0	equ	11100000b	; mascaras para manejo de columnas
+COL1	equ	11010000b
+COL2	equ	10110000b
+COL3	equ	01110000b	
+
+****** Keyboard Mask ********************
+MASKOUT	equ	11110000b
+
+
+$str_hand.def
+$flowctrl.def
+
+	ORG	$0000
+disvar	FCC	'    '
 
 	ORG	$0020
 *********************************************************
@@ -19,10 +48,530 @@ PORTC	equ	$1003		; rows
 *********************************************************
 	ORG	$2000
 main	EQU	*
+	lds	#stk_ini
+	jsr	setup
 
-
+	ldy	#disvar		cargo la direccion del texto para el display
+	jsr	numForm
 
 fin	jmp	fin
+
+
+
+* FIRST TEST PASSING!
+*********************************************************
+*			NUM FORM			*
+*	     fomrulario de entrada numerica		*
+* Funcionamiento:					*
+*	Espera a que el usuario ingrese un valor y/o	*
+* presione una tecla de control.			*
+* Retorna con el valor ingresado (si corresponde) y con *
+* el ID de la tecla (status code) de control presionada.*
+*							*
+* Inputs:						*
+* 	[AccIY]: direc. mem. variable global display	*
+* Outputs:						*
+*	[AccB]: numero escrito				*
+*	[AccA]: status code				*
+* 							*
+* STATUS CODES:						*
+*	0 - sumar '+' 		AccB = valor ingresado	*
+*	1 - restar '-'		AccB = valor ingresado	*
+*	2 - CLEAR 		AccB = 0		*
+*	3 - dividir '/'		AccB = valor ingresado	*
+*	4 - multiplicar '*'	AccB = valor ingresado	*
+*	5 - IGUAL '='		AccB = valor ingresado	*
+*********************************************************
+* [  cont  ] 0 <-(X)
+* [  X L   ]
+* [  X L   ]
+* [  PC H  ]
+* [  PC L  ]
+numForm	EQU	*
+	pshx
+	ldaa	#2		cargo la cantidad maxima de caracteres en INPUT
+	psha			creo dicha variable local
+	tsx
+	pshy
+	ldab	#2		cargo el offset para mostrar los numeros
+	aby			agrego el offset
+
+loop	equ	*
+	jsr	waitkey		espero a recibir un ID de tecla
+
+	cmpa	#9		
+	bls	isNum		si es un numero, lo analizo aparte
+
+*				si no es un numero, analizo el caracter de control
+	suba	#10		quitando el desface numerico del ID
+
+*****************
+* (AccA)	*
+*  [0] A (+)	*
+*  [1] B (-)	*
+*  [2] C (Clear)*
+*  [3] D (/)	*
+*  [4] E (*)	*
+*  [5] F (=)	*
+*****************
+
+	cmpa	#2
+	bne	ret_val		Si no es el boton Clear, retorno con valores
+
+**************** CLEAR BTN *********************
+	ldab	#2		cargo la cantidad max. de caracteres
+	cmpb	0,x		chequeo la cant. de caracteres usados
+	beq	clear		si ninguno esta usado, voy a clear y salgo de la subrutina
+	
+	ldaa	#' '		sino, agrego un espacio por izquierda
+	jsr	push_L		y borro el caracter de la derecha
+	inc	0,x		incremento la cantidad de caracteres disponibles
+	bra	break		e imprimo por pantalla
+
+
+***************** NUMBER ANALYSIS ***********
+isNum	equ	*		
+	tst	0,x		si la cantidad de caracteres disponibles
+	beq	break		es cero, salgo (no agrego nada)
+	adda	#'0'		Si no lo es, agrego el desfase ASCII del caracter
+	jsr	push_R		y lo agrego al vector
+	dec	0,x		decremento la cantidad de caracteres disponibles
+
+
+break	equ	*
+**************** PRINT ****************
+	ldaa	0,y		cargo los caracteres en memoria
+	ldab	#1		y los muestro por tantalla
+	jsr	outchar
+	ldaa	1,y
+	ldab	#0
+	jsr	outchar
+
+**************** END LOOP **************
+	bra	loop		repetir*
+**************** END LOOP **************
+
+
+**************** CLEAR ********************
+*  Salgo de la subrutina y borro AccB
+clear	equ	*
+	ldab	#0
+	bra	infin
+
+************* RETURN VALUES *****************
+*  Salgo de la subrutina con retorno de valores
+ret_val	equ	*
+	jsr	str2int
+
+*********** RETORNO DE SUBRUTINA ***********
+ret	equ	*	
+	puly		recupero backup de Y
+	ins		libero byte del stack usado por variable local
+	pulx		recupero backup de X
+	rts
+
+
+
+
+
+
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  21:11		*
+*************************************************************************
+*		PUSH FROM RIGHT				*
+* agrega un byte por la derecha de un vector de 	*
+* longitud 2, desplazandolo todos sus elementos hacia 	*
+* la izquierda						*
+* Params: 						*
+*	- [AccIY]: puntero al vector			*
+* 	- [AccA]: byte a agregar.			*
+* Nota: No devuelve valores, no es necesario liberar el *
+* 	stack luego de invocarla			*
+*********************************************************
+* [A] 0 <- (X) [FP]
+* [XH]
+* [XL]
+* [PCH]
+* [PCL]
+push_R	EQU	*
+	pshx		;backup de X
+	psha		;guardo el valor de A (byte a cargar)
+	tsx
+	pshy		;backup de Y (posición de memoria del vector)
+	pshb		;backup de B
+
+	ldab	#1	;cargo la cantidad de repeticiones del ciclo
+
+L01	ldaa	1,y	;copio el valor siguiente
+	staa	0,y	;y lo desplazo hacia la izquierda (posición anterior)
+	iny		;voy a la sig. posición
+	decb		;decremento la cantidad de ciclos restantes
+	bne	L01	;si no son cero, repito
+
+
+	ldaa	0,x	;leo el byte del input que debo pushear
+	staa	0,y	;lo escribo en la última posición
+
+	pulb		;recupero todos los backups
+	puly
+	pula
+	pulx
+	rts
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  21:11		*
+*************************************************************************
+*		PUSH FROM LEFT				*
+* agrega un byte por la izquierda de un vector de 	*
+* longitud 2, moviendo todos los elementos a la derecha	*
+* Params: 						*
+* 	- [AccA]: byte a agregar.			*
+*	- [AccIY]: puntero al vector			*
+* Nota: No devuelve valores, no es necesario liberar el *
+* 	stack luego de invocarla			*
+*********************************************************
+* [A] 0 <- (X)
+* [XH]
+* [XL]
+* [PCH]
+* [PCL]
+push_L	EQU	*
+	pshx		;backup de X
+	psha		;guardo el valor de A (byte a cargar)
+	tsx
+	pshy		;backup de Y
+	pshb		;backup de B
+
+	ldab	#1	;cargo la cantidad de repeticiones del ciclo
+	aby		agrego el desfase
+	dey		resto 1 (porque necesito posicionarme en la posición anterior, no en la última)
+
+L03	ldaa	0,y	;copio el valor de la posición actual
+	staa	1,y	;y lo guardo en la posición siguiente (a la derecha)
+	dey		;voy a la posición izquierda (anterior)
+	decb		;decremento la cantidad de ciclos restantes
+	bne	L03	;si no son cero, repito
+
+
+	ldaa	0,x	;leo el byte del input que debo pushear
+	staa	1,y	;lo escribo en la primera posición
+
+	pulb		;recupero todos los backups
+	puly
+	pula
+	pulx
+	rts
+
+
+
+
+
+
+*************************************************************************
+*		# NOT TESTED #		WORK IN PROGRESS		*
+*****************************************************************************************
+*				STRING TO INTEGER (STR2INT)				*
+*											*
+* Descripcion: 										*
+*	Recibe el puntero a una cadena de 2 caracteres compuesta por numeros en	codigo	*
+* ASCII (ej: '27'). Convierte convierte el valor de dicha cadena a un numero de 1 byte	*
+*											*
+* NOTA: No usa el stack para el pasaje de parametros					*
+* Input: 										*
+*	- [AccIY]: direccion de memoria de la cadena a convertir			*
+* Output:										*
+*	- [AccB]: Valor numerico interpretdo de la cadena				*
+* 											*
+* PRECAUCION: LA CADENA DEBE ESTAR FORMADA POR CARACTERES NUMERICOS!			*
+*	LOS CEROS Y ESPACIOS SON TOMADOS COMO CEROS, DA IGUAL DONDE SE ENCUENTRAN	*
+*****************************************************************************************
+str2int	EQU	*
+	psha			backup de A
+
+	ldaa	0,y		cargo en A el numero mas significativo
+	beq	force0		si es nulo, cargo un cero
+	cmpa	#' '		me fijo si es un espacio
+	bne	skip0		si no es, salteo la correcion
+force0	ldaa	#'0'		cargo un cero forzado
+
+skip0	ldab	#'0'		cargo en B el "0" en ASCII
+	sba			resto el B de A y así tengo el valor de A en unidades
+	ldab	#10		cargo el B con 10
+	mul			multiplico A por 10 para tener el decimal y lo guardo en B
+
+	ldaa	1,y		cargo en A el numero unitario en ASCII
+	beq	force1		si es nulo, cargo un cero
+	cmpa	#' '		me fijo si es un espacio
+	bne	skip1		si no es, salteo la correcion
+force1	ldaa	#'0'		cargo un cero forzado
+
+skip1	aba			sumo el decimal con el unitario en ASCII y lo guardo en A
+	ldab	#48		cargo en B el "0" en ASCII
+	sba			al numero le resto el "0" en ASCII para tenerlo en sistema decimal
+	
+	tab			B=A
+	pula			recupero backup de A
+	rts
+
+
+
+
+
+
+
+
+
+
+
+*********************************************************
+*		SUBRUTINA SETUP				*
+* Descripcion:						*
+*	Realiza todas las configuraciones iniciales	*
+*********************************************************
+setup	EQU	*
+	jsr	initdis		inicio el display y teclado
+	jsr	clrdis		borro el display
+	ldy	#disvar
+	clr	0,y
+	clr	1,y
+	clr	2,y
+	clr	3,y
+* clr	op1
+* clr	op1+1		inicio op1 en cero
+	rts
+
+
+
+
+
+
+
+*********************************************************************************************************
+*													*
+* Las siguientes subrutinas utilizan las constantes definidas anteriormente para poder funcionar	*
+*													*
+*********************************************************************************************************
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  18:15		*
+*******************************************************************************************************
+* 
+*	waitkey: devuelve el valor numerico de la tecla presionada en el teclado
+*		por el registro A, para luego poder ser utilizada facilmente como
+*		valor numerico.
+*		- Pone el carry en 1 si no encontro el numero, y en 0 en caso de haberlo encontrado
+* 
+*******************************************************************************************************
+waitkey	equ	*
+
+	pshb	                ; hago backup del registro B
+
+fi0	ldaa	#FIL0		; cargo la fila 0 con un 0
+	staa	PORTC
+	ldab	#0		; cargo B con el numero de fila
+	jsr	convert
+	bcc	finin		; si se encontro el numero, termino
+
+fi1	ldaa	#FIL1		; cargo la fila 1 con un 0
+	staa	PORTC
+	ldab	#1		; cargo B con el numero de fila
+	jsr	convert
+	bcc	finin		; si se encontro el numero, termino
+
+fi2	ldaa	#FIL2		; cargo la fila 2 con un 0
+	staa	PORTC
+	ldab	#2		; cargo B con el numero de fila
+	jsr	convert
+	bcc	finin		; si se encontro el numero, termino
+
+fi3	ldaa	#FIL3		; cargo la fila 3 con un 0
+	staa	PORTC
+	ldab	#3		; cargo B con el numero de fila
+	jsr	convert
+	bcc	finin		; si se encontro el numero, termino
+
+	sec			; si no encontro el numero, pongo el carry en 1.
+	bra	endin
+
+finin	tba			; transfiero el valor de B con el numero encontrado en A.
+
+endin	pulb			; recupero el registro B
+
+	bcs	waitkey
+
+	rts
+
+
+
+*******************************************************************************************************
+*
+*	convert: dados un numero de fila y el valor devuelto por el teclado en dicha fila
+*		devuelve el numero apretado en el teclado en valor hexadecimal
+*		- Recibe por B el numero de fila donde se lo encontro (0-3)
+*		- Devuelve por B el numero apretado en el teclado en valor hexadecimal
+*		- Pone el carry en 1 si no encontro el numero, y en 0 en caso de haberlo encontrado
+*
+*******************************************************************************************************
+convert	equ	*
+
+	psha
+
+	ldaa	#4
+	mul			; hago que B valga el menor numero que aparece entre las teclas de la fila
+	
+	ldaa	PORTC		; leo el puerto C
+	anda	#MASKOUT	; hago una mascara para obtener solo los 4 bits mas significativos (columnas)
+	
+	cmpa	#MASKOUT
+	beq	sinnum  	; de ser todos 1, no se apreto ninguna tecla, termino la subrutina
+
+	cmpa	#COL0		
+	bne	sig1		; si la tecla apretada no estaba en la columna 0, me fijo si fue en 1
+	ldaa	#0		; si fue en 0, cargo en A el valor numerico 0
+	bra	multi		; voy a calcular el numero
+
+sig1	cmpa	#COL1		
+	bne	sig2		; si la tecla apretada no estaba en la columna 1, me fijo si fue en 2
+	ldaa	#1		; si fue un 1, cargo en A el valor numerico 1
+	bra	multi		; voy a calcular el numero
+
+sig2	cmpa	#COL2
+	bne	sig3		; si la tecla apretada no estaba en la columna 2, debe estar en 3
+	ldaa	#2		; si fue un 2, cargo en A el valor numerico 2
+	bra	multi		; voy a calcular el numero
+
+sig3	ldaa	#3		; en este punto la tecla apretada debe ser de la columna 3, por lo que cargo un 3 en A
+	bra	multi		; voy a calcular el numero
+
+
+multi	aba			; le sumo al valor de A (la columna), el valor de B, que apuntaba a la primera columna.
+	tab			; devuelvo el valor en B
+
+	ldaa	PORTC
+	staa	PORTC		; actualizamos el puerto C para poder visualizar la tecla apretada
+	
+soltar	ldaa	PORTC		
+	anda	#MASKOUT	; esperamos a que se suelte la tecla para que el programa siga, y asi poder mandar
+	cmpa	#MASKOUT	; un caracter por vez que se presiona la tecla
+	bne	soltar
+
+	bra	fincon		; pongo el carry en 0, indicando que encontro el numero
+
+sinnum	sec			; si no hay numero, seteo el carry
+
+fincon	pula
+
+	rts
+
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sat 05  18:26		*
+*************************************************************************
+*		println	(PRINT LINE)					*
+* Descripcion:								*
+*	Imprime 4 caracteres en el display en una sola			*
+* subrutina, utilizando un arreglo de 4 bytes (caracteres) en memoria	*
+* como input para el display						*
+*									*
+* Params:								*
+* 	- [AccY]: Pos. de memoria de la cadena que			*
+*		desea imprimir						*
+* 									*
+* Nota: no devuelve valores, deja el AccY como estaba			*
+*	antes de ejecutar la subrutina					*
+*************************************************************************
+* [XH] 0 <- (X)
+* [XL] 1
+* [PCH] 2
+* [PCL] 3
+
+println	equ	*
+	pshy		backup Y
+	psha		backup A
+	pshb		backup B
+
+	ldab	#4	;inicio B en 4
+repite	equ	*
+	decb
+	ldaa	0,y	;leo el caracter en cuestion
+	stab	PORTCL	;set the position 0-3
+	staa	PORTB	;set the character
+	iny
+
+	tstb
+	bne	repite
+
+	pulb		recupero backup B
+	pula		recupero backup A
+	puly		recupero backup Y
+	rts
+
+
+*********************************************************
+*		CLEAR	DISPLAY				*
+* Descripcion:						*
+*	Borra el contenido del display 			*
+*							*
+* Nota: no devuelve valores ni recibe parametros 	*
+*********************************************************
+clrdis	equ	*
+	psha			backup de A
+	pshb			backup de B
+
+	ldab	#3		cantidad de ciclos menos 1 (para usarlo como index)
+L05	ldaa	#' '		cargo un espacio
+	jsr 	outchar		lo escribo en el display
+	decb			decremento el indice
+	bpl	L05		si es positivo, repito (hasta el cero)
+
+	pulb			
+	pula
+	rts			retorno de la subrutina
+
+
+
+*****************************************
+*	outchar				*
+* ACCA: Caracter a enviar		*
+* ACCB: Posicion	(0-3)		*
+*****************************************
+outchar	equ	*
+	stab	PORTCL	;set the position
+	staa	PORTB	;set the character
+	rts
+
+*****************************************
+*	initdis				*
+* Inicia el display			*
+*****************************************
+
+initdis	equ	*
+	psha
+	ldaa	#$0F	;set for input/output
+	staa	DDRC	;C output
+	ldaa	PIOC	;get current value
+	anda	#$FE	;reset bit 0 to 0
+	staa	PIOC	;send it out
+	pula
+	rts
+
+
+
+
+
+
+
+
 
 
 
