@@ -2,19 +2,19 @@
 *	MAIN TESTING			maintest.msa			*
 *************************************************************************
 	p68h11
-*************************************************************************
-*	DEPENDENCIAS: 							*
-*		- UI_v2.msa: 	initdis,clrdis,println,waitkey,outchar	*
-*		- string.msa: 	int4str,str2int				*
-*		- math_ops.msa:	op_suma,op_rest,op_div,op_mul		*
-*		- utils.msa:	delay					*
-*									*
-*		- str_hand.def (string handlers)			*
-*		- op_hand.def (operation handlers)			*
-*									*
-* link11_2 maintest,UI_v2,string,math_ops,utils				*
-*************************************************************************
-	extern	initdis,clrdis,println,waitkey,outchar
+*********************************************************************************
+*	DEPENDENCIAS: 								*
+*		- UI_v2.msa: 	initdis,clrdis,println,waitkey,outchar,numForm	*
+*		- string.msa: 	int4str,str2int					*
+*		- math_ops.msa:	op_suma,op_rest,op_div,op_mul			*
+*		- utils.msa:	delay						*
+*										*
+*		- str_hand.def (string handlers)				*
+*		- op_hand.def (operation handlers)				*
+*										*
+* link11_2 maintest,UI_v2,string,math_ops,utils					*
+*********************************************************************************
+	extern	initdis,clrdis,println,waitkey,outchar,numForm
 	extern	int4str,str2int
 	extern	op_suma,op_rest,op_div,op_mul
 	extern	delay
@@ -25,7 +25,7 @@ $op_hand.def		Incluyo los handlers para math_ops.msa
 $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
 	public	main
-	public	str_var,op1
+	public	str_var,op1,lastop,ercount,counter		variables globales para trackear
 			
 
 * el valor de op1 = IY, lo cambias desde memoria
@@ -37,12 +37,69 @@ OP2	EQU	2
 *****************************************************************
 main	EQU	*
 	lds	#stk_ini
-	jsr	setup		ejecuto la configuracion inicial
+	jsr	setup			ejecuto la configuracion inicial
 
-	jmp	tstloop		!!! MUST DELETE !!!
+loop	equ	*
+	inc	counter			increment loop counter
 
-	sty	op1		op1 = Y
-	%op_hand op_mul,op1,op_err,op_ok
+	clr	str_var+2
+	clr	str_var+3
+
+	ldaa	lastop
+	cmpa	#5
+	bne	next01
+	ldy	#str_var
+	%int4str op1,str_var,pass0
+pass0	%println str_var
+
+next01	equ	*
+
+*---------------------------------------------------------------------------
+	jsr	stop	E R R O R   T E S T I N G
+ERRORS	EQU	2
+*---------------------------------------------------------------------------
+	
+	ldy	#str_var		cargo la direccion de la cadena usada por el display
+	jsr	numForm			formulario de entrada (AccA = code, AccB = inputVal)
+* cmpa	#5			me fijo si
+* bne	skip			presiono el (=)
+* staa	lastop			Si presiono el (=), ejecuto dicho caso
+skip	staa	thisop			guardo el codigo de operacion actual
+
+
+
+*********** SWITCH SEGUN LAST OP ******************************************
+	ldaa	lastop			Cargo el codigo de ultima operacion
+	%switch	OP,0,5			Switch case segun la ultima operacion
+	bra	loop			si no se reconoce el codigo, repito
+
+OP0000	equ	*			0 - SUMA (+) A
+	%op_hand op_suma,op1,op_err,op_ok		 op1 = op1 + B
+
+OP0001	equ	*			1 - RESTA (-) B
+	%op_hand op_rest,op1,op_err,op_ok
+	
+OP0002	equ	*			2 - CLEAR (C) C
+	clr	op1			inicio op1 en cero
+	clr	op1+1			Inicio el status code en (+) para sumar el primer
+	clr	lastop			valor con cero, de esta forma lo guardo
+	bra	endloop
+
+OP0003	equ	*			3 - DIVIDE (/) D
+	%op_hand op_div,op1,op_err,op_ok
+
+OP0004	equ	*			4 - MULTIPLICA (*) E
+	%op_hand op_mul,op1,op_err,op_ok		op1 = op1 * B
+
+OP0005	equ	*			5 - IGUAL (=) F
+	%println str_var		muestro la cadena
+wait	jsr	waitkey
+	cmpa	#9		Si presiono otro numero, espero
+	bls	wait
+	suba	#10		Sino, resto el el desfase numerico
+	staa	lastop		Guardo la tecla de control que haya presionado
+	bra	endloop
+
 
 *********************************************************
 * 		OPERATION ERROR				*
@@ -54,13 +111,20 @@ op_err	equ	*
 
 *********************************************************
 * 		OPERATION OK				*
-* Si la operacion es exitosa, muestra el resultado	*
+* Si la operacion es exitosa, guardo el resultado	*
 op_ok	equ	*			operacion EXITOSA
+
+
+*- POR QUE ESTO ?
+	bra	pass
 	%int4str op1,str_var,pass	;convierto op1 a string y lo guardo en str_var
 	jsr	error			si la conversion falla, muestro el mensaje de error
 	bra	endloop
 
-pass	%println str_var		;imprimo la cadena str_var
+pass	equ	*			;
+
+	ldaa	thisop
+	staa	lastop			actualizo el codigo de operacion
 	bra	endloop
 
 
@@ -68,24 +132,28 @@ pass	%println str_var		;imprimo la cadena str_var
 * 		END OF LOOP				*
 *********************************************************
 endloop	equ	*
-	ldy	op1
-*	bra	loop
-fin	jmp	fin
+	jmp	loop
 
 
 
 
-FIL0	equ	00001110b  	; mascaras para manejo de filas
-FIL1	equ	00001101b
-FIL2	equ	00001011b
-FIL3	equ	00000111b
 
 
 *********************************************************
-*		TESTING LOOP				*
+*			STOP				*
 *********************************************************
-tstloop	equ	*
-	bra	tstloop
+stop	equ	*
+	pshb
+	ldab	ercount
+	cmpb	#0
+	bhi	next
+	ldy	#$AAAA
+	pulb
+fin	jmp	fin		F I N  P A
+	ldy	#$BBBB
+next	dec	ercount
+	pulb
+	rts
 
 
 *********************************************************
@@ -96,8 +164,17 @@ tstloop	equ	*
 setup	EQU	*
 	jsr	initdis		inicio el display y teclado
 	jsr	clrdis		borro el display
-* clr	op1
-* clr	op1+1		inicio op1 en cero
+	ldx	#0
+	stx	op1		inicio op1 en cero
+	stx	str_var+2	borro los ultimos caracteres de str_var
+	
+	ldaa	#ERRORS		guardo la cantidad de errores
+	staa	ercount		
+*				Inicio el status code del ultimo operador en (+) para
+	clr	lastop		sumar el primer valor con cero, de esta forma lo guardo
+	clr	thisop
+	ldab	#0
+	stab	counter
 	rts
 
 
@@ -112,6 +189,11 @@ error	EQU	*
 	%println err_msg	;muestro mensaje de error
 	ldy	#0
 	sty	op1		borro op1
+pressC	jsr	waitkey
+	cmpa	#2		espero a que presionen CLEAR
+	bne	pressC
+*					Inicio el status code en (+) para sumar el primer
+	clr	lastop			valor con cero, de esta forma lo guardo
 	rts
 
 
@@ -122,14 +204,21 @@ error	EQU	*
 *	VARIABLES Y CONSTANTES GLOBALES EN MEMORIA	*
 *********************************************************
 str_var	FCC	'    '		reservo e inicio la cadena en cero (equivale a un RMB y FCC juntos)
-err_msg	FCC	'ERR '
+err_msg	FCC	'ERR '		mensaje de error
 
-op1	RMB	2
+op1	RMB	2		variable para el operando 1 de 16 bits
+lastop	RMB	1		last operation
+thisop	RMB	1		current operation
+
+*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	RMB	100
+ercount	RMB	1		error count
+counter	RMB	1
 
 *********************************************************
 *		STACK DATA				*
 *********************************************************
-stack	RMB	100
+stack	RMB	128
 stk_ini	EQU	*-1
 
 

@@ -4,11 +4,11 @@
 * subrutinas para controlar el display y declado			*
 *************************************************************************
 
-*	TO-DO:	TESTING
-
         p68h11
 
-	public	initdis,waitkey,outchar,println,clrdis
+	extern	push_L,push_R,str2int
+
+	public	initdis,waitkey,outchar,println,clrdis,numForm
 
 ******* Ports ***************************
 
@@ -170,10 +170,8 @@ ret	equ	*
 
 
 
-*	/!\	NOT PASSING
 *************************************************************************
-*		# NOT TESTED #		WORK IN PROGRESS		*
-*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  18:15		*
 *******************************************************************************************************
 * 
 *	waitkey: devuelve el valor numerico de la tecla presionada en el teclado
@@ -202,7 +200,7 @@ fi2	ldaa	#FIL2		; cargo la fila 2 con un 0
 	staa	PORTC
 	ldab	#2		; cargo B con el numero de fila
 	jsr	convert
-*				; si se encontro el numero, termino
+	bcc	finin		; si se encontro el numero, termino
 
 fi3	ldaa	#FIL3		; cargo la fila 3 con un 0
 	staa	PORTC

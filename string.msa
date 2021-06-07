@@ -3,7 +3,7 @@
 *************************************************************************
 	p68h11
 	
-	public	int4str,str2int
+	public	int4str,str2int,push_L,push_R
 
 
 	rseg	CODE
@@ -22,13 +22,13 @@
 * Input: 										*
 *	- [AccIY]: direccion de memoria de la cadena a convertir			*
 * Output:										*
-*	- [AccA]: Valor numerico interpretdo de la cadena				*
+*	- [AccB]: Valor numerico interpretdo de la cadena				*
 * 											*
 * PRECAUCION: LA CADENA DEBE ESTAR FORMADA POR CARACTERES NUMERICOS!			*
 *	LOS CEROS Y ESPACIOS SON TOMADOS COMO CEROS, DA IGUAL DONDE SE ENCUENTRAN	*
 *****************************************************************************************
 str2int	EQU	*
-	pshb			backup de B
+	psha			backup de A
 
 	ldaa	0,y		cargo en A el numero mas significativo
 	beq	force0		si es nulo, cargo un cero
@@ -51,8 +51,109 @@ skip1	aba			sumo el decimal con el unitario en ASCII y lo guardo en A
 	ldab	#48		cargo en B el "0" en ASCII
 	sba			al numero le resto el "0" en ASCII para tenerlo en sistema decimal
 	
-	pulb			recupero backup de B
+	tab			B=A
+	pula			recupero backup de A
 	rts
+
+
+
+
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  21:11		*
+*************************************************************************
+*		PUSH FROM RIGHT				*
+* agrega un byte por la derecha de un vector de 	*
+* longitud 2, desplazandolo todos sus elementos hacia 	*
+* la izquierda						*
+* Params: 						*
+*	- [AccIY]: puntero al vector			*
+* 	- [AccA]: byte a agregar.			*
+* Nota: No devuelve valores, no es necesario liberar el *
+* 	stack luego de invocarla			*
+*********************************************************
+* [A] 0 <- (X) [FP]
+* [XH]
+* [XL]
+* [PCH]
+* [PCL]
+push_R	EQU	*
+	pshx		;backup de X
+	psha		;guardo el valor de A (byte a cargar)
+	tsx
+	pshy		;backup de Y (posición de memoria del vector)
+	pshb		;backup de B
+
+	ldab	#1	;cargo la cantidad de repeticiones del ciclo
+
+L01	ldaa	1,y	;copio el valor siguiente
+	staa	0,y	;y lo desplazo hacia la izquierda (posición anterior)
+	iny		;voy a la sig. posición
+	decb		;decremento la cantidad de ciclos restantes
+	bne	L01	;si no son cero, repito
+
+
+	ldaa	0,x	;leo el byte del input que debo pushear
+	staa	0,y	;lo escribo en la última posición
+
+	pulb		;recupero todos los backups
+	puly
+	pula
+	pulx
+	rts
+
+
+
+*************************************************************************
+*		# TESTED WORKING STABLE #	Sun 06  21:11		*
+*************************************************************************
+*		PUSH FROM LEFT				*
+* agrega un byte por la izquierda de un vector de 	*
+* longitud 2, moviendo todos los elementos a la derecha	*
+* Params: 						*
+* 	- [AccA]: byte a agregar.			*
+*	- [AccIY]: puntero al vector			*
+* Nota: No devuelve valores, no es necesario liberar el *
+* 	stack luego de invocarla			*
+*********************************************************
+* [A] 0 <- (X)
+* [XH]
+* [XL]
+* [PCH]
+* [PCL]
+push_L	EQU	*
+	pshx		;backup de X
+	psha		;guardo el valor de A (byte a cargar)
+	tsx
+	pshy		;backup de Y
+	pshb		;backup de B
+
+	ldab	#1	;cargo la cantidad de repeticiones del ciclo
+	aby		agrego el desfase
+	dey		resto 1 (porque necesito posicionarme en la posición anterior, no en la última)
+
+L03	ldaa	0,y	;copio el valor de la posición actual
+	staa	1,y	;y lo guardo en la posición siguiente (a la derecha)
+	dey		;voy a la posición izquierda (anterior)
+	decb		;decremento la cantidad de ciclos restantes
+	bne	L03	;si no son cero, repito
+
+
+	ldaa	0,x	;leo el byte del input que debo pushear
+	staa	1,y	;lo escribo en la primera posición
+
+	pulb		;recupero todos los backups
+	puly
+	pula
+	pulx
+	rts
+
+
+
+
+
 
 
 

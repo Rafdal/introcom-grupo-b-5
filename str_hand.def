@@ -31,7 +31,7 @@
 
 	ldx	\0		cargo 'num' el numero a convertir
 	pshx			paso 'num' por stack
-	ldy	#\1		cargo la direccion de la string de salida
+	ldy	#\1+1		cargo la direccion de la string de salida
 	jsr	int4str		ejecuto la subrutina en su version mas reciente (int4str)
 	pulx			libero 2 bytes del stack
 
@@ -43,7 +43,7 @@
 
 
 *************************************************************************
-*		# NOT TESTED #		WORK IN PROGRESS		*
+*		# TESTED WORKING STABLE #	Mon 07  02:44		*
 *************************************************************************
 *			PRINTLN (HANDLER)				*
 * Descripcion:								*
