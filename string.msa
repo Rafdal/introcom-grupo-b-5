@@ -193,11 +193,6 @@ inrange	equ	*
 	clr	4,y		inicio la cadena en cero
 	clr	5,y
 
-*---------------------------------------------------------------------------
-* Arrastrar por el cógido para detener el programa luego de N repeticiones:
-	jsr	debug	! E R R O R   T E S T I N G !
-*---------------------------------------------------------------------------
-
 
 dividir	ldx	#10		X = 10
 	idiv			X = D/X  ,  D = resto = B   (resto de division de enteros)

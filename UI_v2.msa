@@ -117,7 +117,7 @@ SG0002	equ	*
 	bra	endsw
 
 SG0003	equ	*
-	%print	'%',3
+	%print	'/',3
 	bra	endsw
 
 SG0004	equ	*
