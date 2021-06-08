@@ -11,11 +11,11 @@
 ## Modules
 !utils.msa
 !string.msa
-!math_ops.msa
-!UI_V2.msa
+!math.msa
+!UI.msa
 
 ## main
-!maintest.msa
+!main.msa
 
 ## debug & testing
 !debug.msa
