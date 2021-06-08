@@ -17,13 +17,6 @@
 ## main
 !main.msa
 
-## debug & testing
-!debug.msa
-!clear.msa
-#!test_*.msa
-
-TP5*
-TP3*
 
 !README.md
 !.gitignore
