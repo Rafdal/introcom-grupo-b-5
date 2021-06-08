@@ -194,7 +194,7 @@ thisop	RMB	1		current operation code
 *********************************************************
 *		STACK DATA				*
 *********************************************************
-stack	RMB	100
+stack	RMB	64
 stk_ini	EQU	*-1
 
 

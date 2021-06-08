@@ -90,9 +90,12 @@ numForm	EQU	*
 	
 
 ***************** WIP ******************* (codigo enmendado)
-	ldaa	0,x		si la ultima op fue (=)[F]code=5
-	cmpa	#5		
+	ldaa	0,x		me fijo el codigo de la ultima operacion
+	cmpa	#2		comparo con codigo CLEAR
+	beq	ret		si no fue, voy a imprimir por pantalla
+	cmpa	#5		comparo con operacion 'igual' (=)[F] code=5
 	bne	break		si no fue, voy a imprimir por pantalla
+
 
 isNum0	jsr	waitkey
 	cmpa	#9		chequeo si esta en el rango 0-9 (numero)
