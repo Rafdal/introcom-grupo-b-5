@@ -37,9 +37,10 @@ $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
 
 	public	main
-	public	str_var,op1,lastop	para trackear las vars globales del programa
 
 * 	public	ercount,counter		(DEBUG) vars. globales para depurar errores
+* 	public	str_var,op1,lastop	(DEBUG) para trackear la posicion de las vars del programa
+*					No las usamos externamente
 
 	rseg	CODE
 *****************************************************************
@@ -52,7 +53,7 @@ main	EQU	*
 
 
 loop	equ	*
-* inc	counter			increment loop counter (DEBUG)
+* inc	counter			(DEBUG) increment loop counter
 
 *********************************************************
 *		TO-DO	REVISAR ! MODIFICAR !
@@ -64,10 +65,10 @@ loop	equ	*
 	ldaa	lastop			cargo la ultima operacion
 	cmpa	#5			si es un (=) [F] code=5
 	bne	next01
-	ldy	#str_var		convierto el resultado numerico a str
-	%int4str op1,str_var,pass0
+	ldy	#str_var		convierto el resultado numerico (op1) a str -> str_var
+	%int4str op1,str_var,pass0	
 	jsr	error			si por algun motivo falla, voy a error
-pass0	%println str_var		lo muestro por pantalla
+pass0	%println str_var		si la conversion es exitosa, la muestro por pantalla
 
 next01	equ	*			si no es un igual, evaluo el input
 	
