@@ -62,8 +62,7 @@ loop	equ	*
 	ldaa	lastop			cargo la ultima operacion
 	cmpa	#5			si es un (=) [F] code=5
 	bne	next01
-	ldy	#str_var		convierto el resultado numerico (op1) a str -> str_var
-	%int4str op1,str_var,pass0	
+	%int4str op1,str_var,pass0	;convierto el resultado numerico (op1) a str -> str_var
 	jsr	error			si por algun motivo falla, voy a error
 pass0	%println str_var		si la conversion es exitosa, la muestro por pantalla
 

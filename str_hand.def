@@ -50,7 +50,7 @@
 *	Recibe un caracter y la posicion del display donde se lo desea	*
 *	imprimir							*
 * Sintaxis:								*
-*	%println char,pos						*
+*	%print char,pos							*
 *************************************************************************
 	macro	%print
 	psha
@@ -75,8 +75,6 @@
 *	%println strOut							*
 *************************************************************************
 	macro	%println
-	pshy			backup de Y
 	ldy	#\0
 	jsr	println
-	puly			recupero backup de Y
 	endmac

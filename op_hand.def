@@ -34,5 +34,5 @@
 	puly			
 	sty	\1		guardo el resultado (sin juzgar su validez)
 	bcs	\2		C=1 error
-	bcc	\3		C=0 ok    branch segun el resultado de la operacion
+	bra	\3		C=0 ok    branch segun el resultado de la operacion
 	endmac
