@@ -53,9 +53,9 @@ loop	equ	*
 * inc	counter			(DEBUG ONLY) increment loop counter
 
 *************************************************************************
-*		TO-DO	REVISAR ! MODIFICAR !				*
-* Esta parte del codigo esta enmendada, deberia ir en numForm		*
-* o en otra subrutina a evaluar, pero a falta de tiempo queda aqui	*
+*			     WORKAROUND					*  TO-DO:
+* Esta parte del codigo esta enmendada, deberia ir en numForm		*    REVISAR!
+* o en otra subrutina a evaluar, pero a falta de tiempo queda aqui	*    SOLUCIONAR!
 *************************************************************************
 	clr	str_var+2		borro los ultimos dos caracteres del display
 	clr	str_var+3
@@ -67,7 +67,7 @@ loop	equ	*
 pass0	%println str_var		si la conversion es exitosa, la muestro por pantalla
 
 next01	equ	*			si no es un igual, evaluo el input
-*			    # END TO-DO	#				*
+*			### END OF WORKAROUND ###			*
 *************************************************************************
 
 
@@ -88,8 +88,8 @@ OP0001	equ	*			RESTA (-) B
 	%op_hand op_rest,op1,op_err,op_ok		op1 = op1 - B
 	
 OP0002	equ	*			CLEAR (C) C
-	jsr	setup		ejecuto el setup para cargar todo en cero
-	bra	endloop		desde cero y reinicio el loop
+	jsr	setup			ejecuto el setup para cargar todo en cero
+	bra	endloop			desde cero y reinicio el loop
 
 OP0003	equ	*			DIVIDE (/) D
 	%op_hand op_div,op1,op_err,op_ok		op1 = op1 / B
@@ -174,7 +174,7 @@ pressC	jsr	waitkey		espero a que presionen cualquier tecla
 
 
 *********************************************************
-*		CONSTANTES GLOBALES			*
+*			CONSTANTES			*
 *********************************************************
 	rseg	CONST
 
