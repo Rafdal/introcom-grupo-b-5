@@ -102,11 +102,10 @@ isNum0	jsr	waitkey
 	bls	isNum0
 	clr	0,y		clear str
 	clr	1,y
-	%print	' ',0
-	%print	' ',1
-	%print	' ',2		limpio el display
+	
+	jsr	clrdis		clear display
 
-	suba	#10
+	suba	#10		quito el offset del ID de los numeros
 	bra	ret
 ************** END WIP *******************
 
