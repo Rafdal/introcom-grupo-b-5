@@ -7,8 +7,13 @@
 *************************************************************************
 
 
+
+
 *************************************************************************
-*		# NOT TESTED #		WORK IN PROGRESS		*
+* TO-DO: Solucionar problema del ultimo CASE generado			*
+*	innecesariamente (aunque por suerte no se compila)		*
+*************************************************************************
+*	# NOT FULLY TESTED #		WORK IN PROGRESS		* TEST PASSING
 *************************************************************************
 *			SWITCH CASE (macro)				*
 * Descripcion:								*

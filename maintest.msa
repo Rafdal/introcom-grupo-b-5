@@ -20,7 +20,7 @@
 	extern	op_suma,op_rest,op_div,op_mul
 	extern	delay
 
-* extern	debug,initdeb		(DEBUG)
+* extern	debug,initdeb		(DEBUG ONLY)
 
 
 *********************************************************
@@ -34,12 +34,10 @@ $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
 
 
-
-
 	public	main
 
-* 	public	ercount,counter		(DEBUG) vars. globales para depurar errores
-* 	public	str_var,op1,lastop	(DEBUG) para trackear la posicion de las vars del programa
+* 	public	ercount,counter		(DEBUG ONLY) vars. globales para depurar errores
+* 	public	str_var,op1,lastop	(DEBUG ONLY) para trackear la posicion de las vars del programa
 *					No las usamos externamente
 
 	rseg	CODE
@@ -53,13 +51,13 @@ main	EQU	*
 
 
 loop	equ	*
-* inc	counter			(DEBUG) increment loop counter
+* inc	counter			(DEBUG ONLY) increment loop counter
 
-*********************************************************
-*		TO-DO	REVISAR ! MODIFICAR !
-* Esta parte del codigo esta enmendada, deberia ir
-* en numForm, pero a falta de tiempo queda aqui
-*********************************************************
+*************************************************************************
+*		TO-DO	REVISAR ! MODIFICAR !				*
+* Esta parte del codigo esta enmendada, deberia ir en numForm		*
+* o en otra subrutina a evaluar, pero a falta de tiempo queda aqui	*
+*************************************************************************
 	clr	str_var+2		borro los ultimos dos caracteres del display
 	clr	str_var+3
 	ldaa	lastop			cargo la ultima operacion
@@ -71,17 +69,19 @@ loop	equ	*
 pass0	%println str_var		si la conversion es exitosa, la muestro por pantalla
 
 next01	equ	*			si no es un igual, evaluo el input
-	
+*			    # END TO-DO	#				*
+*************************************************************************
+
+
+
 	ldy	#str_var		cargo la direccion de la cadena usada por el display
 	jsr	numForm			formulario de entrada (AccA = code, AccB = inputVal)
-
 	staa	thisop			guardo el codigo de operacion actual
 
-
-*********** SWITCH SEGUN LAST OP ******************************************
+*********** SWITCH SEGUN ULTIMA OPERACION***************************
 	ldaa	lastop			Cargo el codigo de ultima operacion
 	%switch	OP,0,5			Switch case segun la ultima operacion
-	bra	loop			si no se reconoce el codigo, repito
+	bra	pass			si no se reconoce el codigo, salgo (default)
 
 OP0000	equ	*			SUMA (+) A
 	%op_hand op_suma,op1,op_err,op_ok		op1 = op1 + B
@@ -90,7 +90,7 @@ OP0001	equ	*			RESTA (-) B
 	%op_hand op_rest,op1,op_err,op_ok		op1 = op1 - B
 	
 OP0002	equ	*			CLEAR (C) C
-	jsr	setup		ejecuto el setup para cargar todo
+	jsr	setup		ejecuto el setup para cargar todo en cero
 	bra	endloop		desde cero y reinicio el loop
 
 OP0003	equ	*			DIVIDE (/) D
@@ -117,8 +117,7 @@ op_err	equ	*
 op_ok	equ	*			operacion EXITOSA
 	tstb				Si B > 0 -> hay resto (solo op_div puede dejar AccB > 0)
 	beq	pass
-* TO-DO: Implementar mostrar resto de la division
-
+* 					TO-DO: Implementar mostrar resto de la division
 
 pass	equ	*			;
 	ldaa	thisop
@@ -136,10 +135,6 @@ endloop	equ	*
 
 
 
-
-
-
-
 *********************************************************
 *		SUBRUTINA SETUP				*
 * Descripcion:						*
@@ -152,12 +147,14 @@ setup	EQU	*
 	stx	op1		inicio op1 en cero
 	stx	str_var+2	borro los ultimos caracteres de str_var
 	
-* ldaa	#ERRORS		(DEBUG) inicio las funciones de depuracion
+* ldaa	#ERRORS		(DEBUG ONLY) inicio las funciones de depuracion
 * jsr	initdeb
 *				Inicio el status code del ultimo operador en 0 (+) para
 	clr	lastop		sumar el primer valor con 0 (cero), de esta forma lo guardo
 	clr	thisop
 	rts
+
+
 
 
 *********************************************************
@@ -178,22 +175,26 @@ pressC	jsr	waitkey		espero a que presionen cualquier tecla
 
 
 
+*********************************************************
+*		CONSTANTES GLOBALES			*
+*********************************************************
+	rseg	CONST
 
-	rseg	VARS
-*********************************************************
-*	VARIABLES Y CONSTANTES GLOBALES EN MEMORIA	*
-*********************************************************
-str_var	FCC	'    '		reservo e inicio la cadena en cero (equivale a un RMB y FCC juntos)
 err_msg	FCC	'ERR '		mensaje de error
 
+
+
+*********************************************************
+*	VARIABLES GLOBALES EN MEMORIA	*
+*********************************************************
+	rseg	VARS
+
+str_var	RMB	4		reservo e inicio la cadena en cero (equivale a un RMB y FCC juntos)
 op1	RMB	2		variable para el operando 1 de 16 bits
 lastop	RMB	1		last operation code
 thisop	RMB	1		current operation code
 
-
-*********************************************************
-*		STACK DATA				*
-*********************************************************
+******************** STACK DATA *************************
 stack	RMB	64
 stk_ini	EQU	*-1
 
