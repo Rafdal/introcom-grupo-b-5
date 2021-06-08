@@ -1,20 +1,21 @@
+*************************************************************************
+*	UTILITIES			utils.msa			*
+*************************************************************************
 	p68h11
 
-	public	delay,push_R,push_L
+	public	push_R,push_L
 
 	rseg	CODE
-
-
 
 *************************************************************************
 *		# TESTED WORKING STABLE #	Sun 06  21:11		*
 *************************************************************************
-*		PUSH FROM RIGHT				*
-* agrega un byte por la derecha de un vector de 	*
-* longitud 2, desplazandolo todos sus elementos hacia 	*
-* la izquierda						*
-* Params: 						*
-*	- [AccIY]: puntero al vector			*
+*		PUSH FROM RIGHT				* Nota: la subrutina esta forzada
+* agrega un byte por la derecha de un vector de 	*	para vectores de longitud 2
+* longitud 2, desplazandolo todos sus elementos hacia 	*	pero dicho valor se puede cambiar
+* la izquierda						*	o pasar como parametro si se desea
+* Params: 						*	mejorar el programa para vectores
+*	- [AccIY]: puntero al vector			*	de longitud N
 * 	- [AccA]: byte a agregar.			*
 * Nota: No devuelve valores, no es necesario liberar el *
 * 	stack luego de invocarla			*
@@ -31,7 +32,7 @@ push_R	EQU	*
 	pshy		;backup de Y (posición de memoria del vector)
 	pshb		;backup de B
 
-	ldab	#1	;cargo la cantidad de repeticiones del ciclo
+	ldab	#1	;cargo la cantidad de repeticiones del ciclo (vectorSize-1)
 
 L01	ldaa	1,y	;copio el valor siguiente
 	staa	0,y	;y lo desplazo hacia la izquierda (posición anterior)
@@ -75,7 +76,7 @@ push_L	EQU	*
 	pshy		;backup de Y
 	pshb		;backup de B
 
-	ldab	#1	;cargo la cantidad de repeticiones del ciclo
+	ldab	#1	;cargo la cantidad de repeticiones del ciclo (vectorSize-1)
 	aby		agrego el desfase
 	dey		resto 1 (porque necesito posicionarme en la posición anterior, no en la última)
 
@@ -96,45 +97,5 @@ L03	ldaa	0,y	;copio el valor de la posición actual
 	rts
 
 
-
-
-
-*********************************************************
-*		SUBRUTINA delay				*
-*							*
-* Esta subrutina genera un delay de aprox 1s para el	*
-* simluador del wookie					*
-* No recibe ningun parametro ni retorna valores, no 	*
-* hace falta liberar el stack depues de invocarla	*
-*********************************************************
-
-delay	equ	*
-	pshx			Hago backup de los registros	(4 ciclos)
-	pshy							(5 ciclos)
-	psha							(3 ciclos)
-	pshb							(3 ciclos)
-	ldaa	#14		Cargo la cantidad de repeticiones que hare con el loop1. (23 ciclos)
-*								[TOTAL:17]
-
-*	[LOOP1]: n recorridos del loop1 lleva n*(9+T) ciclos, siendo T los ciclos en total del loop2. 
-loop1	ldy	#$D900		Cargo la cantidad de repeticiones que hare con el loop2. (4 ciclos)
-
-* 	[LOOP2]: Un solo recorrido del loop2 lleva 9 ciclos, 55552 ($D900) recorridos del loop2 lleva 499968 ciclos
-loop2	nop			retardo 		(2 ciclos)
-	dey			decremento Y 		(4 ciclos)
-	bne	loop2		salto si no es cero 	(3 ciclos)
-*							[TOTAL:9]
-
-	deca			decremento A	(2 ciclos)
-	bne	loop1		si A!=0, repito (3 ciclos)
-
-
-	ldy	#$12		Retardo 			(5 ciclos)
-	pulb			Recupero el valor 		(4 ciclos)
-	pula			de los	registros		(4 ciclos)
-	puly							(6 ciclos)
-	pulx							(5 ciclos)
-	rts			Retorno de la rubrutina		(5 ciclos)
-*								[TOTAL:29]
 
 	END

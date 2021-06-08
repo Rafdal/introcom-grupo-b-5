@@ -1,24 +1,23 @@
 *************************************************************************
-*	MAIN TESTING			maintest.msa			*
+*	MAIN 				main.msa			*
 *************************************************************************
 	p68h11
 *********************************************************************************
 *	DEPENDENCIAS: 								*
-*		- UI_v2.msa: 	initdis,clrdis,println,waitkey,outchar,numForm	*
+*		- UI.msa: 	initdis,clrdis,println,waitkey,outchar,numForm	*
 *		- string.msa: 	int4str,str2int					*
-*		- math_ops.msa:	op_suma,op_rest,op_div,op_mul			*
-*		- utils.msa:	delay						*
+*		- math.msa:	op_suma,op_rest,op_div,op_mul			*
+*		- utils.msa							*
 *										*
 *		- str_hand.def (string handlers)				*
 *		- op_hand.def (operation handlers)				*
 *		- flowctrl.def (flow control macros)				*
 * P/ LINKEAR:									*
-* 	link11_2 maintest,UI_v2,string,math_ops,utils				*
+* 	link11_2 main UI string math utils					*
 *********************************************************************************
 	extern	initdis,clrdis,println,waitkey,outchar,numForm
 	extern	int4str,str2int
 	extern	op_suma,op_rest,op_div,op_mul
-	extern	delay
 
 * extern	debug,initdeb		(DEBUG ONLY)
 
@@ -28,7 +27,7 @@
 *********************************************************
 
 $str_hand.def		Incluyo los handlers para string.msa
-$op_hand.def		Incluyo los handlers para math_ops.msa
+$op_hand.def		Incluyo los handlers para math.msa
 
 $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
