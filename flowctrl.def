@@ -31,7 +31,7 @@
 	macro 	%switch
 ncase	SET	\1
 	IF 	ncase<=\2
-	cmpa	#ncase		comparo el valor de a con el case index
+	cmpa	#ncase		comparo el valor de A con el case index
 	beq	\0\@		si coincide hago branch hacia \0\<
 ncase	SET	ncase+1
 	%switch	\0,ncase,\2

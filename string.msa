@@ -23,8 +23,9 @@
 * Output:										*
 *	- [AccB]: Valor numerico interpretdo de la cadena				*
 * 											*
-* PRECAUCION: LA CADENA DEBE ESTAR FORMADA POR CARACTERES NUMERICOS!			*
-*	LOS CEROS Y ESPACIOS SON TOMADOS COMO CEROS, DA IGUAL DONDE SE ENCUENTRAN	*
+* PRECAUCION:										* 
+*	1) LA CADENA DEBE ESTAR FORMADA POR CARACTERES NUMERICOS!			*
+*	2) LOS CEROS Y ESPACIOS SON TOMADOS COMO CEROS LITERALES, NO IMPORTA DONDE ESTEN*
 *****************************************************************************************
 str2int	EQU	*
 	psha			backup de A
@@ -59,9 +60,9 @@ skip1	aba			sumo el decimal con el unitario en ASCII y lo guardo en A
 
 
 *************************************************************************   DEPRECATED !
-*		# TESTED WORKING STABLE #	Sat 05  18:27		*   USE INT4STR
+*		# TESTED WORKING STABLE #	Sun 06  06:27		*   USE INT4STR
 *****************************************************************************************
-*			INTEGER TO STRING  (INT2STR)	[OLD]				*
+*			INTEGER TO STRING  (INT2STR)		[OLD]			*
 * Descripcion: 										*
 *	Recibe un numero entero de 16 bits por stack y lo representa en una		*
 *	cadena de texto de 3 caracteres ASCII (max 999) la cual tambien devuelve por	*

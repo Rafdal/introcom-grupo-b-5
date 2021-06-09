@@ -11,19 +11,14 @@
 ## Modules
 !utils.msa
 !string.msa
-!math_ops.msa
-!UI_V2.msa
+!math.msa
+!UI.msa
 
 ## main
-!maintest.msa
+!main.msa
+!main.s19
+!main.r07
 
-## debug & testing
-!debug.msa
-!clear.msa
-#!test_*.msa
-
-TP5*
-TP3*
 
 !README.md
 !.gitignore

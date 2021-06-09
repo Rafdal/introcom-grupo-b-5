@@ -4,11 +4,11 @@
 *	Este archivo de definiciones contiene macros	*
 *	para manejar las subrutinas de los modulos:	*
 *	- string.msa					*
-*	- UI_v2.msa					*
+*	- UI.msa					*
 *********************************************************
 
 
-
+*	TO-DO: Optimizar
 *************************************************************************
 *		# TESTED WORKING STABLE #	Sun 06  04:04		*
 *************************************************************************
@@ -26,7 +26,7 @@
 * 	SINTAXIS:	%int4str num,strOut,pass			*
 *************************************************************************
 	macro	%int4str
-	pshx			backup de X e Y
+	pshx			backup de X e Y 	[TO-DO]: era necesario hacer estos backups???
 	pshy
 
 	ldx	\0		cargo 'num' el numero a convertir
@@ -42,26 +42,6 @@
 
 
 
-*************************************************************************
-*		# TESTED WORKING STABLE #	Mon 07  02:44		*
-*************************************************************************
-*			PRINTLN (HANDLER)				*
-* Descripcion:								*
-*	Recibe un caracter y la posicion del display donde se lo desea	*
-*	imprimir							*
-* Sintaxis:								*
-*	%println char,pos						*
-*************************************************************************
-	macro	%print
-	psha
-	pshb
-	ldaa	#\0
-	ldab	#\1
-	jsr	outchar
-	pulb
-	pula
-	endmac
-
 
 *************************************************************************
 *		# TESTED WORKING STABLE #	Sat 05  22:13		*
@@ -75,8 +55,6 @@
 *	%println strOut							*
 *************************************************************************
 	macro	%println
-	pshy			backup de Y
 	ldy	#\0
 	jsr	println
-	puly			recupero backup de Y
 	endmac

@@ -1,24 +1,23 @@
 *************************************************************************
-*	MAIN TESTING			maintest.msa			*
+*	MAIN 				main.msa			*
 *************************************************************************
 	p68h11
 *********************************************************************************
 *	DEPENDENCIAS: 								*
-*		- UI_v2.msa: 	initdis,clrdis,println,waitkey,outchar,numForm	*
+*		- UI.msa: 	initdis,clrdis,println,waitkey,outchar,numForm	*
 *		- string.msa: 	int4str,str2int					*
-*		- math_ops.msa:	op_suma,op_rest,op_div,op_mul			*
-*		- utils.msa:	delay						*
+*		- math.msa:	op_suma,op_rest,op_div,op_mul			*
+*		- utils.msa							*
 *										*
 *		- str_hand.def (string handlers)				*
 *		- op_hand.def (operation handlers)				*
 *		- flowctrl.def (flow control macros)				*
 * P/ LINKEAR:									*
-* 	link11_2 maintest,UI_v2,string,math_ops,utils				*
+* 	link11_2 main UI string math utils					*
 *********************************************************************************
 	extern	initdis,clrdis,println,waitkey,outchar,numForm
 	extern	int4str,str2int
 	extern	op_suma,op_rest,op_div,op_mul
-	extern	delay
 
 * extern	debug,initdeb		(DEBUG ONLY)
 
@@ -28,7 +27,7 @@
 *********************************************************
 
 $str_hand.def		Incluyo los handlers para string.msa
-$op_hand.def		Incluyo los handlers para math_ops.msa
+$op_hand.def		Incluyo los handlers para math.msa
 
 $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
@@ -36,7 +35,7 @@ $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
 	public	main
 
-* 	public	ercount,counter		(DEBUG ONLY) vars. globales para depurar errores
+* 	extern	counter			(DEBUG ONLY) var. global para depurar errores. Loops counter
 * 	public	str_var,op1,lastop	(DEBUG ONLY) para trackear la posicion de las vars del programa
 *					No las usamos externamente
 
@@ -54,22 +53,21 @@ loop	equ	*
 * inc	counter			(DEBUG ONLY) increment loop counter
 
 *************************************************************************
-*		TO-DO	REVISAR ! MODIFICAR !				*
-* Esta parte del codigo esta enmendada, deberia ir en numForm		*
-* o en otra subrutina a evaluar, pero a falta de tiempo queda aqui	*
+*			     WORKAROUND					*  TO-DO:
+* Esta parte del codigo esta enmendada, deberia ir en numForm		*    REVISAR!
+* o en otra subrutina a evaluar, pero a falta de tiempo queda aqui	*    SOLUCIONAR!
 *************************************************************************
 	clr	str_var+2		borro los ultimos dos caracteres del display
 	clr	str_var+3
 	ldaa	lastop			cargo la ultima operacion
 	cmpa	#5			si es un (=) [F] code=5
 	bne	next01
-	ldy	#str_var		convierto el resultado numerico (op1) a str -> str_var
-	%int4str op1,str_var,pass0	
+	%int4str op1,str_var,pass0	;convierto el resultado numerico (op1) a str -> str_var
 	jsr	error			si por algun motivo falla, voy a error
 pass0	%println str_var		si la conversion es exitosa, la muestro por pantalla
 
 next01	equ	*			si no es un igual, evaluo el input
-*			    # END TO-DO	#				*
+*			### END OF WORKAROUND ###			*
 *************************************************************************
 
 
@@ -78,6 +76,7 @@ next01	equ	*			si no es un igual, evaluo el input
 	jsr	numForm			formulario de entrada (AccA = code, AccB = inputVal)
 	staa	thisop			guardo el codigo de operacion actual
 
+******************************************************************** TO-DO: Optimizar!!!!!
 *********** SWITCH SEGUN ULTIMA OPERACION***************************
 	ldaa	lastop			Cargo el codigo de ultima operacion
 	%switch	OP,0,5			Switch case segun la ultima operacion
@@ -90,8 +89,8 @@ OP0001	equ	*			RESTA (-) B
 	%op_hand op_rest,op1,op_err,op_ok		op1 = op1 - B
 	
 OP0002	equ	*			CLEAR (C) C
-	jsr	setup		ejecuto el setup para cargar todo en cero
-	bra	endloop		desde cero y reinicio el loop
+	jsr	setup			ejecuto el setup para cargar todo en cero
+	bra	endloop			desde cero y reinicio el loop
 
 OP0003	equ	*			DIVIDE (/) D
 	%op_hand op_div,op1,op_err,op_ok		op1 = op1 / B
@@ -102,6 +101,9 @@ OP0004	equ	*			MULTIPLICA (*) E
 OP0005	equ	*			IGUAL (=) F
 	bra	pass					op1 = op1 -> (print result)
 
+*					CUIDADO: La macro op_hand es ineficiente,
+*						innecesaria y debe ser corregida cuanto antes
+*						Leer comentario de op_hand.def !!!
 
 *********************************************************
 * 		OPERATION ERROR				*
@@ -176,7 +178,7 @@ pressC	jsr	waitkey		espero a que presionen cualquier tecla
 
 
 *********************************************************
-*		CONSTANTES GLOBALES			*
+*			CONSTANTES			*
 *********************************************************
 	rseg	CONST
 
