@@ -1,7 +1,6 @@
 # Calculadora - Main.msa
-Descripcion
 
-# DEPENDENCIAS:
+## DEPENDENCIAS:
 * **UI.msa**: initdis, clrdis, println, waitkey, outchar, numForm
 * **string.msa**: int4str, str2int
 * **math.msa**: op_suma, op_rest, op_div, op_mul

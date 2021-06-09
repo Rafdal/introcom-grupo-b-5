@@ -35,7 +35,7 @@ $flowctrl.def		Incluyo las macros para controlar el flujo del programa
 
 	public	main
 
-* 	public	ercount,counter		(DEBUG ONLY) vars. globales para depurar errores
+* 	extern	counter			(DEBUG ONLY) var. global para depurar errores. Loops counter
 * 	public	str_var,op1,lastop	(DEBUG ONLY) para trackear la posicion de las vars del programa
 *					No las usamos externamente
 
@@ -76,6 +76,7 @@ next01	equ	*			si no es un igual, evaluo el input
 	jsr	numForm			formulario de entrada (AccA = code, AccB = inputVal)
 	staa	thisop			guardo el codigo de operacion actual
 
+******************************************************************** TO-DO: Optimizar!!!!!
 *********** SWITCH SEGUN ULTIMA OPERACION***************************
 	ldaa	lastop			Cargo el codigo de ultima operacion
 	%switch	OP,0,5			Switch case segun la ultima operacion
@@ -100,6 +101,9 @@ OP0004	equ	*			MULTIPLICA (*) E
 OP0005	equ	*			IGUAL (=) F
 	bra	pass					op1 = op1 -> (print result)
 
+*					CUIDADO: La macro op_hand es ineficiente,
+*						innecesaria y debe ser corregida cuanto antes
+*						Leer comentario de op_hand.def !!!
 
 *********************************************************
 * 		OPERATION ERROR				*

@@ -8,7 +8,7 @@
 *********************************************************
 
 
-
+*	TO-DO: Optimizar
 *************************************************************************
 *		# TESTED WORKING STABLE #	Sun 06  04:04		*
 *************************************************************************
@@ -26,7 +26,7 @@
 * 	SINTAXIS:	%int4str num,strOut,pass			*
 *************************************************************************
 	macro	%int4str
-	pshx			backup de X e Y
+	pshx			backup de X e Y 	[TO-DO]: era necesario hacer estos backups???
 	pshy
 
 	ldx	\0		cargo 'num' el numero a convertir
