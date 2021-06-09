@@ -16,6 +16,8 @@
 
 ## main
 !maintest.msa
+!maintest.r07
+!maintest.s19
 
 ## debug & testing
 !debug.msa
